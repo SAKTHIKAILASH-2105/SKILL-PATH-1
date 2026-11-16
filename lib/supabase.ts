@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient, createServerClient, type CookieOptions } from '@supabase/ssr';
 
 // Environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -15,6 +16,39 @@ export function isSupabaseConfigured(): boolean {
   );
 }
 
+// Client-side Supabase Browser Client (using @supabase/ssr)
+export function createBrowserSupabaseClient() {
+  if (!isSupabaseConfigured()) return null;
+  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+}
+
+// Server-side Supabase Client for Route Handlers and Server Components
+export function createServerSupabaseClient(cookieStore: {
+  getAll: () => { name: string; value: string }[] | Promise<{ name: string; value: string }[]>;
+  setAll?: (cookies: { name: string; value: string; options?: CookieOptions }[]) => void;
+}) {
+  if (!isSupabaseConfigured()) return null;
+
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      async getAll() {
+        return await cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        if (cookieStore.setAll) {
+          try {
+            cookieStore.setAll(cookiesToSet);
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing user sessions.
+          }
+        }
+      },
+    },
+  });
+}
+
+// Standard Singleton Client
 let supabaseInstance: SupabaseClient | null = null;
 
 export function getSupabase(): SupabaseClient | null {
