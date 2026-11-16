@@ -39,7 +39,6 @@ export function AppSidebar({ isOpen = false, onClose }: AppSidebarProps) {
     { label: 'AI Mentor Chat', href: '/mentor', icon: Bot, badge: 'AI' },
     { label: 'AI Agent Activity', href: '/agents', icon: Sparkles, badge: '9 Agents' },
     { label: 'Learner Profile', href: '/profile', icon: User },
-    { label: 'Supabase Cloud', href: '/settings/supabase', icon: Database, badge: 'DB' },
     { label: 'Admin Center', href: '/admin', icon: ShieldCheck, adminOnly: true },
   ];
 

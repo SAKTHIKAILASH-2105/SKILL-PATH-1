@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Award,
   CheckCircle2,
@@ -16,6 +16,7 @@ import {
   Check,
   Copy,
   GraduationCap,
+  FileCheck,
 } from 'lucide-react';
 
 interface CertificateModalProps {
@@ -42,6 +43,8 @@ export function CertificateModal({
   const [savingToProfile, setSavingToProfile] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   if (!isOpen) return null;
 
@@ -64,6 +67,271 @@ export function CertificateModal({
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadCertificate = () => {
+    setIsDownloading(true);
+    try {
+      const width = 1600;
+      const height = 1130;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        window.print();
+        setIsDownloading(false);
+        return;
+      }
+
+      // Background gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+      bgGrad.addColorStop(0, '#fffdfa');
+      bgGrad.addColorStop(0.5, '#ffffff');
+      bgGrad.addColorStop(1, '#fefbf3');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // Outer golden border
+      ctx.lineWidth = 14;
+      ctx.strokeStyle = '#d97706';
+      ctx.strokeRect(30, 30, width - 60, height - 60);
+
+      // Inner thin golden border
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#f59e0b';
+      ctx.strokeRect(48, 48, width - 96, height - 96);
+
+      // Corner ornaments
+      const drawCorner = (x: number, y: number, dirX: number, dirY: number) => {
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#b45309';
+        ctx.beginPath();
+        ctx.moveTo(x, y + dirY * 40);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x + dirX * 40, y);
+        ctx.stroke();
+      };
+      drawCorner(60, 60, 1, 1);
+      drawCorner(width - 60, 60, -1, 1);
+      drawCorner(60, height - 60, 1, -1);
+      drawCorner(width - 60, height - 60, -1, -1);
+
+      // Top Crest Circle
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(width / 2, 140, 48, 0, Math.PI * 2);
+      const crestGrad = ctx.createLinearGradient(width / 2 - 48, 92, width / 2 + 48, 188);
+      crestGrad.addColorStop(0, '#d97706');
+      crestGrad.addColorStop(1, '#b45309');
+      ctx.fillStyle = crestGrad;
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#fef3c7';
+      ctx.stroke();
+
+      // Star in crest
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 36px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('★', width / 2, 140);
+      ctx.restore();
+
+      // Top Institution Name
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillStyle = '#92400e';
+      ctx.letterSpacing = '6px';
+      ctx.fillText('PROMPTWARS ACADEMY', width / 2, 220);
+
+      ctx.font = '13px sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.letterSpacing = '3px';
+      ctx.fillText('ADAPTIVE AI LEARNING & VERIFIED CREDENTIALS', width / 2, 246);
+
+      // Main Certificate Title
+      ctx.font = '900 48px Georgia, serif';
+      ctx.fillStyle = '#0f172a';
+      ctx.letterSpacing = '2px';
+      ctx.fillText('CERTIFICATE OF COMPLETION', width / 2, 330);
+
+      ctx.font = '14px sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.letterSpacing = '4px';
+      ctx.fillText('THIS CREDENTIAL IS PROUDLY AWARDED TO', width / 2, 375);
+
+      // Recipient Name
+      ctx.font = 'bold 54px Georgia, serif';
+      ctx.fillStyle = '#1e293b';
+      ctx.letterSpacing = '1px';
+      ctx.fillText(recipientName, width / 2, 455);
+
+      // Gold line under name
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#d97706';
+      ctx.beginPath();
+      ctx.moveTo(width / 2 - 280, 480);
+      ctx.lineTo(width / 2 + 280, 480);
+      ctx.stroke();
+
+      // Small diamond on line
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath();
+      ctx.arc(width / 2, 480, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Body text
+      ctx.font = '20px sans-serif';
+      ctx.fillStyle = '#334155';
+      ctx.letterSpacing = '0.5px';
+      ctx.fillText(
+        'for successfully mastering all modules, rigorous diagnostic evaluations,',
+        width / 2,
+        535
+      );
+      ctx.fillText(
+        'hands-on video masterclasses, and verified competency assessments in',
+        width / 2,
+        568
+      );
+
+      // Course Title Box
+      const courseBoxWidth = 750;
+      const courseBoxHeight = 65;
+      const courseBoxX = width / 2 - courseBoxWidth / 2;
+      const courseBoxY = 605;
+
+      ctx.fillStyle = '#fffbeb';
+      ctx.fillRect(courseBoxX, courseBoxY, courseBoxWidth, courseBoxHeight);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#f59e0b';
+      ctx.strokeRect(courseBoxX, courseBoxY, courseBoxWidth, courseBoxHeight);
+
+      ctx.font = 'bold 30px Georgia, serif';
+      ctx.fillStyle = '#78350f';
+      ctx.fillText(courseTitle, width / 2, courseBoxY + 44);
+
+      // Skills tags (if any)
+      if (skills && skills.length > 0) {
+        const skillsText = skills.slice(0, 4).join('  •  ');
+        ctx.font = 'bold 15px sans-serif';
+        ctx.fillStyle = '#0284c7';
+        ctx.letterSpacing = '1px';
+        ctx.fillText(`VERIFIED SKILLS: ${skillsText.toUpperCase()}`, width / 2, 705);
+      }
+
+      // Divider before signatures
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.beginPath();
+      ctx.moveTo(120, 750);
+      ctx.lineTo(width - 120, 750);
+      ctx.stroke();
+
+      // Left Signature
+      ctx.font = 'italic 28px Georgia, serif';
+      ctx.fillStyle = '#1e293b';
+      ctx.fillText('Dr. Elena Rostova', 300, 830);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.moveTo(200, 845);
+      ctx.lineTo(400, 845);
+      ctx.stroke();
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillStyle = '#334155';
+      ctx.fillText('DR. ELENA ROSTOVA', 300, 870);
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('Director of Academic Affairs', 300, 890);
+
+      // Center Official Seal
+      ctx.save();
+      const sealX = width / 2;
+      const sealY = 850;
+      ctx.beginPath();
+      ctx.arc(sealX, sealY, 55, 0, Math.PI * 2);
+      const sealGrad = ctx.createLinearGradient(sealX - 55, sealY - 55, sealX + 55, sealY + 55);
+      sealGrad.addColorStop(0, '#fef3c7');
+      sealGrad.addColorStop(0.5, '#fde68a');
+      sealGrad.addColorStop(1, '#f59e0b');
+      ctx.fillStyle = sealGrad;
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#b45309';
+      ctx.stroke();
+
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = '#78350f';
+      ctx.letterSpacing = '2px';
+      ctx.fillText('OFFICIAL SEAL', sealX, sealY - 14);
+      ctx.font = '900 18px sans-serif';
+      ctx.fillText('VERIFIED', sealX, sealY + 8);
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText('ACCREDITED', sealX, sealY + 26);
+      ctx.restore();
+
+      // Right Signature
+      ctx.font = 'italic 28px Georgia, serif';
+      ctx.fillStyle = '#1e293b';
+      ctx.fillText('Marcus Vance', width - 300, 830);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.moveTo(width - 400, 845);
+      ctx.lineTo(width - 200, 845);
+      ctx.stroke();
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillStyle = '#334155';
+      ctx.fillText('MARCUS VANCE', width - 300, 870);
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('Lead Curriculum Architect', width - 300, 890);
+
+      // Bottom Metadata Bar
+      ctx.font = '13px sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'left';
+      ctx.fillText(`DATE OF ISSUANCE: ${formattedDate.toUpperCase()}`, 100, 1050);
+
+      ctx.textAlign = 'right';
+      ctx.font = 'bold 13px monospace';
+      ctx.fillStyle = '#475569';
+      ctx.fillText(`CREDENTIAL ID: ${verificationId}`, width - 100, 1050);
+
+      // Trigger instant PNG Download
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            window.print();
+            setIsDownloading(false);
+            return;
+          }
+          const blobUrl = URL.createObjectURL(blob);
+          const downloadAnchor = document.createElement('a');
+          const safeName = recipientName.replace(/[^a-zA-Z0-9]/g, '_');
+          const safeCourse = courseTitle.replace(/[^a-zA-Z0-9]/g, '_');
+          downloadAnchor.href = blobUrl;
+          downloadAnchor.download = `SkillPath_Certificate_${safeCourse}_${safeName}.png`;
+          document.body.appendChild(downloadAnchor);
+          downloadAnchor.click();
+          document.body.removeChild(downloadAnchor);
+          URL.revokeObjectURL(blobUrl);
+
+          setDownloadSuccess(true);
+          setTimeout(() => setDownloadSuccess(false), 3000);
+          setIsDownloading(false);
+        },
+        'image/png',
+        1.0
+      );
+    } catch (err) {
+      console.error('Download failed, falling back to print:', err);
+      window.print();
+      setIsDownloading(false);
+    }
   };
 
   const handleSaveToProfile = async () => {
@@ -103,6 +371,10 @@ export function CertificateModal({
       {/* Print Specific CSS */}
       <style jsx global>{`
         @media print {
+          @page {
+            size: landscape;
+            margin: 0;
+          }
           body * {
             visibility: hidden !important;
           }
@@ -147,23 +419,54 @@ export function CertificateModal({
                   Official
                 </span>
               </h3>
-              <p className="text-[11px] text-slate-400">Issued by PromptWars Adaptive AI Learning Platform</p>
+              <p className="text-[11px] text-slate-400">Issued by SkillPath AI Learning Platform</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Primary Direct Download Button */}
+            <button
+              onClick={handleDownloadCertificate}
+              disabled={isDownloading}
+              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all ${
+                downloadSuccess
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-700/20'
+              }`}
+              title="Instantly download high-resolution certificate image (PNG)"
+            >
+              {downloadSuccess ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Downloaded! ✓</span>
+                </>
+              ) : isDownloading ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Generating Certificate...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Download Certificate</span>
+                </>
+              )}
+            </button>
+
+            {/* Print / Save as PDF Button */}
             <button
               onClick={handlePrint}
-              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors"
+              className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors"
+              title="Print or Save as PDF"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print / Download PDF</span>
+              <span>Print / PDF</span>
             </button>
 
             <button
               onClick={handleSaveToProfile}
               disabled={savingToProfile || savedSuccess}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors ${
+              className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors ${
                 savedSuccess
                   ? 'bg-emerald-600 text-white'
                   : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
@@ -172,7 +475,7 @@ export function CertificateModal({
               {savedSuccess ? (
                 <>
                   <Check className="w-3.5 h-3.5" />
-                  <span>Saved to Profile ✓</span>
+                  <span>Saved</span>
                 </>
               ) : (
                 <>
@@ -184,7 +487,7 @@ export function CertificateModal({
 
             <button
               onClick={handleCopyLink}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors hover:bg-slate-800"
+              className="p-2 text-slate-400 hover:text-white rounded-lg transition-colors hover:bg-slate-800"
               title="Copy verification link"
             >
               {copiedLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
@@ -192,7 +495,7 @@ export function CertificateModal({
 
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors hover:bg-slate-800 ml-2"
+              className="p-2 text-slate-400 hover:text-white rounded-lg transition-colors hover:bg-slate-800 ml-1"
             >
               <X className="w-5 h-5" />
             </button>
@@ -232,7 +535,7 @@ export function CertificateModal({
                 <Award className="w-8 h-8" />
               </div>
               <div className="tracking-[0.25em] uppercase text-[11px] font-extrabold text-amber-800">
-                PromptWars Academy
+                SkillPath Academy
               </div>
               <div className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">
                 Adaptive AI Learning & Verified Credentials
@@ -362,8 +665,9 @@ export function CertificateModal({
 
         {/* Bottom Modal Actions (Hidden when printing) */}
         <div className="no-print bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
-          <p className="text-xs text-slate-500">
-            Click <strong>Print / Download PDF</strong> to save your certificate in pristine quality or submit it to LinkedIn.
+          <p className="text-xs text-slate-500 flex items-center gap-1.5">
+            <FileCheck className="w-4 h-4 text-emerald-600" />
+            <span>Click <strong>Download Certificate</strong> to save your high-resolution verified credential.</span>
           </p>
           <button
             onClick={onClose}

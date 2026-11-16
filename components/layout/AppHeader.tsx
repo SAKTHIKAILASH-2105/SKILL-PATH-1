@@ -125,15 +125,6 @@ export function AppHeader({ onToggleSidebar, onOpenAgentDrawer }: AppHeaderProps
               </button>
             )}
 
-            {/* Supabase Cloud Link */}
-            <Link
-              href="/settings/supabase"
-              className="p-2 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors border border-slate-200"
-              title="Supabase Database & Cloud Settings"
-            >
-              <Database className="w-4 h-4 text-emerald-600" />
-            </Link>
-
             {/* Authenticated User Menu or Guest Auth Buttons */}
             {currentUser ? (
               <div className="relative">
@@ -174,14 +165,16 @@ export function AppHeader({ onToggleSidebar, onOpenAgentDrawer }: AppHeaderProps
                       <span>My Profile & Skills</span>
                     </Link>
 
-                    <Link
-                      href="/settings/supabase"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition-colors"
-                    >
-                      <Database className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Supabase Settings</span>
-                    </Link>
+                    {currentUser.role === 'admin' && (
+                      <Link
+                        href="/settings/supabase"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition-colors"
+                      >
+                        <Database className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Database Settings</span>
+                      </Link>
+                    )}
 
                     {currentUser.role === 'admin' && (
                       <Link

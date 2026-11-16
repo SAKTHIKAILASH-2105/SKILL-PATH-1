@@ -208,35 +208,7 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        {/* Supabase Connection Status Card */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-slate-700 shadow-md">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
-              <Database className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold flex items-center gap-2">
-                <span>Cloud Database:</span>
-                <span className={supabaseConfigured ? 'text-emerald-400 font-extrabold' : 'text-amber-400 font-extrabold'}>
-                  {supabaseConfigured ? 'Supabase PostgreSQL Connected ✓' : 'Local Storage (Supabase Setup Available)'}
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-300 mt-0.5">
-                {supabaseConfigured
-                  ? 'Your personal account and progress are synced with your Supabase cloud backend.'
-                  : 'Connect your Supabase project URL & Anon Key to enable live cloud sync and multi-device persistence.'}
-              </p>
-            </div>
-          </div>
 
-          <Link
-            href="/settings/supabase"
-            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition-colors shrink-0 flex items-center justify-center gap-1.5 self-start sm:self-auto"
-          >
-            <span>{supabaseConfigured ? 'Manage Supabase' : 'Connect Supabase'}</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </Link>
-        </div>
 
         {/* Basic Info Form */}
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-6">
