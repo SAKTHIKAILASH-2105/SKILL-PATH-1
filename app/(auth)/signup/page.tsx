@@ -85,20 +85,33 @@ export default function SignupPage() {
     try {
       const supabase = getSupabase();
       if (!supabase) {
-        throw new Error('Google sign-in is connecting. Please ensure your project is configured.');
+        throw new Error('Authentication backend is not configured.');
       }
-      const { error } = await supabase.auth.signInWithOAuth({
+
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
-      if (error) {
-        throw error;
+
+      if (oauthError) {
+        throw oauthError;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
       }
     } catch (err: any) {
-      setError(err.message || 'Google sign-up failed. Please verify Google OAuth in your Supabase dashboard.');
-    } finally {
+      const msg = err.message || '';
+      if (msg.includes('not enabled') || msg.includes('Unsupported provider') || msg.includes('validation_failed')) {
+        setError(
+          'Google Provider is not enabled in your Supabase project yet. In your Supabase Dashboard, go to Authentication → Providers → Google to enable it, or create your account with email and password below.'
+        );
+      } else {
+        setError(msg || 'Google sign-up failed. Please try again or create your account with email.');
+      }
       setGoogleLoading(false);
     }
   };
@@ -125,8 +138,8 @@ export default function SignupPage() {
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
         <div className="bg-slate-900/90 border border-slate-800 py-8 px-6 sm:px-10 shadow-2xl rounded-3xl backdrop-blur space-y-5">
           {error && (
-            <div className="p-3.5 rounded-2xl bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2.5">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="p-3.5 rounded-2xl bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex items-start gap-2.5 leading-relaxed">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
