@@ -1,51 +1,71 @@
 @echo off
-setlocal
-echo ========================================================
-echo   PromptWars / SkillPath AI - GitHub Deployment Script
-echo ========================================================
+setlocal enabledelayedexpansion
+title Deploy PromptWars / SkillPath AI to GitHub
+color 0A
+
+echo ======================================================================
+echo    SkillPath AI / PromptWars - 1-Click GitHub Deployment
+echo ======================================================================
+echo.
+echo Target Repository:
+echo   https://github.com/SAKTHIKAILASH-2105/SKILL-PATH-1.git
 echo.
 
-set PATH=%PATH%;C:\Users\ADMIN\AppData\Local\Programs\Git\cmd
+set "PATH=%PATH%;C:\Users\ADMIN\AppData\Local\Programs\Git\cmd;C:\Users\ADMIN\AppData\Local\Programs\Git\mingw64\bin"
 
 git --version >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Git command not found.
+    echo [ERROR] Git could not be located at C:\Users\ADMIN\AppData\Local\Programs\Git\cmd
     pause
     exit /b 1
 )
 
-echo [1/3] Checking current Git repository status...
+echo [1/3] Configuring repository and remote origin...
+git branch -M main
+git remote remove origin >nul 2>&1
+git remote add origin https://github.com/SAKTHIKAILASH-2105/SKILL-PATH-1.git
+git remote -v
+
+echo.
+echo [2/3] Checking committed changes...
 git status --short
 
 echo.
-set /p REPO_URL="Enter your GitHub Repository URL (e.g. https://github.com/username/promptwars.git): "
-
-if "%REPO_URL%"=="" (
-    echo [ERROR] Repository URL cannot be empty.
-    pause
-    exit /b 1
-)
-
+echo [3/3] Pushing to GitHub (main branch)...
 echo.
-echo [2/3] Setting remote origin to %REPO_URL%...
-git remote remove origin >nul 2>&1
-git remote add origin %REPO_URL%
-git branch -M main
-
+echo NOTE: If a GitHub window or browser tab opens, click "Sign in with your browser"
+echo       to authorize the push.
 echo.
-echo [3/3] Pushing code to GitHub (main branch)...
+
 git push -u origin main
 
 if %ERRORLEVEL% EQU 0 (
     echo.
-    echo ========================================================
+    echo ======================================================================
     echo   SUCCESS! Your project is now deployed on GitHub!
-    echo ========================================================
+    echo   View repository: https://github.com/SAKTHIKAILASH-2105/SKILL-PATH-1
+    echo ======================================================================
 ) else (
     echo.
-    echo [ERROR] Git push failed. If this is a private repo or requires authentication:
-    echo 1. Generate a Personal Access Token at https://github.com/settings/tokens
-    echo 2. Use: https://<TOKEN>@github.com/username/repo.git
+    echo ----------------------------------------------------------------------
+    echo [NOTICE] If browser authentication did not complete, you can push with
+    echo a GitHub Personal Access Token (PAT):
+    echo.
+    echo 1. Generate a token at: https://github.com/settings/tokens
+    echo    (Check the 'repo' permission checkbox and copy the token)
+    echo 2. Enter your token below to push immediately:
+    echo ----------------------------------------------------------------------
+    set /p GITHUB_PAT="Enter your GitHub Token (or press Enter to exit): "
+    if not "!GITHUB_PAT!"=="" (
+        git remote set-url origin https://!GITHUB_PAT!@github.com/SAKTHIKAILASH-2105/SKILL-PATH-1.git
+        git push -u origin main
+        if !ERRORLEVEL! EQU 0 (
+            echo.
+            echo SUCCESS! Pushed to https://github.com/SAKTHIKAILASH-2105/SKILL-PATH-1
+        )
+    )
 )
 
-pause
+echo.
+echo Press any key to close this window...
+pause >nul
