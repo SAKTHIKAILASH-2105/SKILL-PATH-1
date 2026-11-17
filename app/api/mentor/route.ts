@@ -1,12 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { generateMentorResponse, MentorContext } from '@/lib/llm/provider';
+import { AVAILABLE_MENTORS, getMentor } from '@/lib/mentors';
 
 export async function GET(req: NextRequest) {
   const userId = req.cookies.get('skillpath_user_id')?.value;
-  const messages = userId ? db.getMentorMessages(userId) : [];
+  const user = userId ? db.getUser(userId) : null;
+  let messages = userId ? db.getMentorMessages(userId) : [];
 
-  return NextResponse.json({ messages });
+  const activeMentor = getMentor(user?.preferredMentorId);
+
+  // If no mentor messages yet, initialize greeting from active mentor
+  if (userId && messages.length === 0) {
+    const greeting = db.addMentorMessage({
+      userId,
+      sender: 'mentor',
+      mentorId: activeMentor.id,
+      mentorName: activeMentor.name,
+      mentorAvatar: activeMentor.avatar,
+      text: activeMentor.greeting,
+      actionSuggestion: {
+        label: 'Explore Active Roadmap',
+        actionType: 'navigate',
+        payload: '/roadmap',
+      },
+    });
+    messages = [greeting];
+  }
+
+  return NextResponse.json({
+    messages,
+    activeMentor,
+    availableMentors: AVAILABLE_MENTORS,
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -17,11 +43,39 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const body = await req.json();
-    const { message } = body;
+    const { message, action, mentorId } = body;
+
+    // Handle Mentor Selection / Switching
+    if (action === 'select_mentor') {
+      const selectedMentor = getMentor(mentorId);
+      db.updateUser(userId, { preferredMentorId: selectedMentor.id });
+
+      const mentorGreetingMsg = db.addMentorMessage({
+        userId,
+        sender: 'mentor',
+        mentorId: selectedMentor.id,
+        mentorName: selectedMentor.name,
+        mentorAvatar: selectedMentor.avatar,
+        text: selectedMentor.greeting,
+        actionSuggestion: {
+          label: 'Explore Active Roadmap',
+          actionType: 'navigate',
+          payload: '/roadmap',
+        },
+      });
+
+      return NextResponse.json({
+        activeMentor: selectedMentor,
+        mentorMessage: mentorGreetingMsg,
+        message: `Successfully switched active mentor to ${selectedMentor.name}`,
+      });
+    }
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message text is required' }, { status: 400 });
     }
+
+    const activeMentor = getMentor(mentorId || user.preferredMentorId);
 
     // Save user's question
     const userMsg = db.addMentorMessage({
@@ -51,6 +105,7 @@ export async function POST(req: NextRequest) {
       roadmap,
       latestSubmission,
       progress,
+      mentorProfile: activeMentor,
     };
 
     // Generate AI Mentor response
@@ -60,6 +115,9 @@ export async function POST(req: NextRequest) {
     const mentorMsg = db.addMentorMessage({
       userId,
       sender: 'mentor',
+      mentorId: activeMentor.id,
+      mentorName: activeMentor.name,
+      mentorAvatar: activeMentor.avatar,
       text: mentorResult.text,
       actionSuggestion: mentorResult.actionSuggestion,
     });
@@ -68,17 +126,18 @@ export async function POST(req: NextRequest) {
     db.addAgentLog({
       userId,
       agentName: 'AI Mentor Agent',
-      agentRole: 'Personalized Pedagogical Guidance',
+      agentRole: `${activeMentor.name} (${activeMentor.role})`,
       status: 'completed',
-      input: { question: message, career: career?.title },
+      input: { question: message, career: career?.title, mentor: activeMentor.name },
       output: { replyLength: mentorResult.text.length, action: mentorResult.actionSuggestion?.label },
-      summary: `AI Mentor answered query: "${message.slice(0, 45)}...". Guided learner regarding current learning priorities.`,
+      summary: `${activeMentor.name} answered query: "${message.slice(0, 45)}...". Guided learner regarding current learning priorities.`,
       decisionImpact: mentorResult.actionSuggestion ? `Suggested actionable step: ${mentorResult.actionSuggestion.label}` : 'Provided conceptual explanation.',
     });
 
     return NextResponse.json({
       userMessage: userMsg,
       mentorMessage: mentorMsg,
+      activeMentor,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Mentor error' }, { status: 500 });

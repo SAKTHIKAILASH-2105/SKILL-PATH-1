@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       user: newUser,
-      message: 'Account created successfully! Welcome to PromptWars.',
+      message: 'Account created successfully! Welcome to SkillPath AI.',
       supabaseConnected: Boolean(supabaseUserId),
     });
 

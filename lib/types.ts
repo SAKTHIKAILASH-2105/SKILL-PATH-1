@@ -21,6 +21,7 @@ export interface User {
   targetCareerId: string;
   weeklyHours: number;
   preferredStyle: string;
+  preferredMentorId?: string;
   streakDays: number;
   subscriptionTier: 'free' | 'pro' | 'enterprise';
   subscriptionExpiresAt: string | null;
@@ -221,9 +222,26 @@ export interface AgentLog {
   decisionImpact: string;
 }
 
+export interface MentorProfile {
+  id: string;
+  name: string;
+  title: string;
+  role: string;
+  avatar: string;
+  specialties: string[];
+  bio: string;
+  personality: string;
+  greeting: string;
+  tagline: string;
+  badgeColor: string;
+}
+
 export interface MentorMessage {
   id: string;
   userId: string;
+  mentorId?: string;
+  mentorName?: string;
+  mentorAvatar?: string;
   sender: 'user' | 'mentor' | 'system';
   text: string;
   actionSuggestion?: {

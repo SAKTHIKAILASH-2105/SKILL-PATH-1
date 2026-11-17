@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { SubscriptionModal } from '@/components/SubscriptionModal';
 import { CertificateModal } from '@/components/CertificateModal';
+import { getMentor } from '@/lib/mentors';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -278,23 +279,38 @@ export default function DashboardPage() {
             <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
           </Link>
 
-          <Link
-            href="/mentor"
-            className="p-4 bg-white border border-slate-200 hover:border-emerald-500 rounded-2xl shadow-xs transition-all hover:shadow-md group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <HelpCircle className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
-                  Ask AI Mentor
+          {(() => {
+            const activeMentor = getMentor(data?.user?.preferredMentorId);
+            return (
+              <Link
+                href="/mentor"
+                className="p-4 bg-white border border-slate-200 hover:border-blue-500 rounded-2xl shadow-xs transition-all hover:shadow-md group flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative shrink-0">
+                    <img
+                      src={activeMentor.avatar}
+                      alt={activeMentor.name}
+                      className="w-10 h-10 rounded-xl object-cover border border-slate-200 group-hover:scale-105 transition-transform"
+                    />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-1.5">
+                      <span>{activeMentor.name}</span>
+                      <span className="text-[9px] bg-blue-100 text-blue-800 font-extrabold px-1.5 py-0.2 rounded shrink-0">
+                        Active Mentor
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 truncate max-w-[190px]">
+                      {activeMentor.role}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-[11px] text-slate-500">&ldquo;What should I learn next?&rdquo;</div>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
-          </Link>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+              </Link>
+            );
+          })()}
         </div>
 
         {/* SELECT COURSES & TOPIC MASTERY WIDGET */}

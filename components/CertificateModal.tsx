@@ -144,7 +144,7 @@ export function CertificateModal({
       ctx.font = 'bold 18px sans-serif';
       ctx.fillStyle = '#92400e';
       ctx.letterSpacing = '6px';
-      ctx.fillText('PROMPTWARS ACADEMY', width / 2, 220);
+      ctx.fillText('SKILLPATH ACADEMY', width / 2, 220);
 
       ctx.font = '13px sans-serif';
       ctx.fillStyle = '#64748b';
@@ -342,7 +342,7 @@ export function CertificateModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: `${courseTitle} - Certificate of Mastery`,
-          issuer: 'PromptWars Academy & Adaptive Learning Engine',
+          issuer: 'SkillPath Academy & Adaptive Learning Engine',
           date: new Date().toISOString().split('T')[0],
           url: `/courses/${courseId}`,
         }),

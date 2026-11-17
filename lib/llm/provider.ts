@@ -1,4 +1,5 @@
-import { User, Career, RoadmapStage, UserSkill, AssessmentSubmission, UserProgress } from '../types';
+import { User, Career, RoadmapStage, UserSkill, AssessmentSubmission, UserProgress, MentorProfile } from '../types';
+import { getMentor } from '../mentors';
 
 export interface MentorContext {
   user: User;
@@ -7,6 +8,7 @@ export interface MentorContext {
   roadmap: RoadmapStage[];
   latestSubmission?: AssessmentSubmission;
   progress: UserProgress;
+  mentorProfile?: MentorProfile;
 }
 
 export interface MentorResponse {
@@ -43,7 +45,12 @@ async function callGeminiAPI(
   query: string,
   context: MentorContext
 ): Promise<MentorResponse> {
-  const prompt = `You are the AI Mentor on SkillPath AI, a personalized learning platform with the philosophy "Learn only what you need before learning what you want."
+  const mentor = context.mentorProfile || getMentor(context.user.preferredMentorId);
+  const prompt = `You are ${mentor.name}, ${mentor.title} at SkillPath AI.
+Your Specialty: ${mentor.role}
+Your Mentoring Approach: ${mentor.personality}
+Core Platform Philosophy: "Learn only what you need before learning what you want."
+
 Learner Profile:
 - Name: ${context.user.name}
 - Target Career: ${context.career?.title || 'Not specified'}
@@ -55,7 +62,7 @@ Learner Profile:
 
 Learner asks: "${query}"
 
-Provide a warm, highly pedagogical, and encouraging answer strictly tailored to their profile and roadmap. Keep response to 2-3 concise paragraphs. Format with clean markdown.`;
+Provide a warm, highly pedagogical, and encouraging answer strictly tailored to their profile and roadmap from your perspective as ${mentor.name} (${mentor.title}). Keep response to 2-3 concise paragraphs. Format with clean markdown.`;
 
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
     method: 'POST',
@@ -85,13 +92,26 @@ function generateContextualFallback(
   const careerTitle = context.career?.title || 'Full Stack Developer';
   const latestScore = context.latestSubmission?.score;
   const latestStatus = context.latestSubmission?.readinessStatus;
+  const mentor = context.mentorProfile || getMentor(context.user.preferredMentorId);
+
+  // 0. "Who are you?" / "Tell me about yourself"
+  if (q.includes('who are you') || q.includes('about you') || q.includes('your background') || q.includes('your specialty') || q.includes('tell me about yourself')) {
+    return {
+      text: `Hello ${userName}! I am **${mentor.name}**, your **${mentor.title}**.\n\n**My Specialty:** ${mentor.role}\n**Key Focus Areas:** ${mentor.specialties.join(' • ')}\n\n${mentor.bio}\n\n*${mentor.tagline}*\n\nYou can switch to another specialist anytime using the **Switch Mentor** button at the top!`,
+      actionSuggestion: {
+        label: 'Explore Active Roadmap',
+        actionType: 'navigate',
+        payload: '/roadmap',
+      },
+    };
+  }
 
   // 1. "What should I learn next?"
   if (q.includes('what should i learn next') || q.includes('learn next') || q.includes('next step') || q.includes('next topic')) {
     const activeStage = context.roadmap.find((s) => s.status === 'In Progress') || context.roadmap.find((s) => s.status === 'Available');
     if (activeStage) {
       return {
-        text: `Hey ${userName}! Based on your current roadmap for **${careerTitle}**, your highest-priority next step is **${activeStage.title}** (Stage ${activeStage.stageNumber}).\n\n**Why this now?** ${activeStage.reason}\n\nRemember our core principle: *"Learn only what you need before learning what you want."* Completing this foundational stage unlocks subsequent advanced modules.`,
+        text: `Hey ${userName}! This is ${mentor.name}. Based on your current roadmap for **${careerTitle}**, your highest-priority next step is **${activeStage.title}** (Stage ${activeStage.stageNumber}).\n\n**Why this now?** ${activeStage.reason}\n\nRemember our core principle: *"Learn only what you need before learning what you want."* Completing this foundational stage unlocks subsequent advanced modules.`,
         actionSuggestion: {
           label: `Open ${activeStage.title}`,
           actionType: 'navigate',
@@ -100,7 +120,7 @@ function generateContextualFallback(
       };
     }
     return {
-      text: `Great progress, ${userName}! You have completed all unlocked stages. To unlock your next modules, head over to your courses and verify your prerequisite readiness with a quick diagnostic!`,
+      text: `Great progress, ${userName}! You have completed all currently unlocked stages. Head over to your courses and verify your prerequisite readiness with a quick diagnostic!`,
       actionSuggestion: {
         label: 'View Course Catalog',
         actionType: 'navigate',
@@ -191,7 +211,7 @@ function generateContextualFallback(
 
   // 7. General fallback
   return {
-    text: `Hello ${userName}! As your AI Mentor for **${careerTitle}**, I am tracking your learning journey in real time.\n\nYou have an active **${context.user.streakDays}-day learning streak** and have logged **${context.progress.totalHoursSpent} hours** of study.\n\n${latestScore !== undefined ? `Your latest assessment score was **${latestScore}% (${latestStatus})**.` : 'You have not taken your course readiness diagnostic yet.'}\n\nFeel free to ask me:\n- *"What should I learn next?"*\n- *"Why do I need JavaScript before React?"*\n- *"Explain promises simply"*\n- *"Why did my roadmap change?"*\n- *"Recommend a project for my skill level"*`,
+    text: `Hello ${userName}! I am **${mentor.name}** (${mentor.title}), your active AI Mentor for **${careerTitle}**.\n\nYou have an active **${context.user.streakDays}-day learning streak** and have logged **${context.progress.totalHoursSpent} hours** of study.\n\n${latestScore !== undefined ? `Your latest assessment score was **${latestScore}% (${latestStatus})**.` : 'You have not taken your course readiness diagnostic yet.'}\n\nFeel free to ask me:\n- *"What should I learn next?"*\n- *"Why do I need JavaScript before React?"*\n- *"Explain promises simply"*\n- *"Why did my roadmap change?"*\n- *"Recommend a project for my skill level"*\n- *"Tell me about yourself"*`,
     actionSuggestion: {
       label: 'Explore Roadmap',
       actionType: 'navigate',
