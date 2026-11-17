@@ -57,6 +57,11 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => a.avgScore - b.avgScore)
     .slice(0, 5);
 
+  const courseEnrollments = db.getCourseEnrollmentStats();
+  const studentsWithDetails = db.getAllStudentsWithDetails();
+  const totalEnrollments = courseEnrollments.reduce((acc, c) => acc + c.enrolledCount, 0);
+  const totalCertificatesIssued = db.getRaw().certifications.length;
+
   return NextResponse.json({
     analytics: {
       totalLearners,
@@ -69,7 +74,11 @@ export async function GET(req: NextRequest) {
       totalCourses: courses.length,
       totalResources: resources.length,
       totalAssessments: assessments.length,
+      totalEnrollments,
+      totalCertificatesIssued,
     },
+    courseEnrollments,
+    students: studentsWithDetails,
     learners: users.filter((u) => u.role === 'learner'),
     careers,
     courses,

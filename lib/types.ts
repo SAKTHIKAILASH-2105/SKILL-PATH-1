@@ -196,6 +196,7 @@ export interface UserProgress {
   completedExerciseIds: string[];
   completedStageIds: string[];
   completedCourseIds: string[];
+  enrolledCourseIds?: string[];
   totalHoursSpent: number;
   currentStreak: number;
   lastActiveDate: string;

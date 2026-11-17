@@ -31,6 +31,70 @@
       "subscriptionTier": "enterprise",
       "subscriptionExpiresAt": "2028-12-31T23:59:59Z",
       "createdAt": "2026-11-16T05:19:30.171Z"
+    },
+    {
+      "id": "usr_priya",
+      "name": "Priya Patel",
+      "email": "priya@skillpath.ai",
+      "role": "learner",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+      "education": "B.S. in Information Technology",
+      "experience": "Junior Web Developer with 1 year experience building UI prototypes",
+      "targetCareerId": "car_react_frontend",
+      "weeklyHours": 12,
+      "preferredStyle": "Visual tutorials, video code-alongs and quizzes",
+      "streakDays": 14,
+      "subscriptionTier": "pro",
+      "subscriptionExpiresAt": "2027-01-01T00:00:00Z",
+      "createdAt": "2026-10-15T10:00:00Z"
+    },
+    {
+      "id": "usr_rohan",
+      "name": "Rohan Mehta",
+      "email": "rohan@skillpath.ai",
+      "role": "learner",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+      "education": "B.E. in Artificial Intelligence & Data",
+      "experience": "Academic research in predictive modeling and deep learning architectures",
+      "targetCareerId": "car_ai_ml_engineer",
+      "weeklyHours": 18,
+      "preferredStyle": "Mathematical theory followed by code implementation",
+      "streakDays": 21,
+      "subscriptionTier": "pro",
+      "subscriptionExpiresAt": "2027-03-15T00:00:00Z",
+      "createdAt": "2026-09-20T08:30:00Z"
+    },
+    {
+      "id": "usr_ananya",
+      "name": "Ananya Iyer",
+      "email": "ananya@skillpath.ai",
+      "role": "learner",
+      "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=256&q=80",
+      "education": "B.Sc. in Applied Statistics & Mathematics",
+      "experience": "Data Analyst intern creating automated SQL ETL dashboards",
+      "targetCareerId": "car_data_scientist",
+      "weeklyHours": 10,
+      "preferredStyle": "Hands-on dataset investigations & interactive quizzes",
+      "streakDays": 5,
+      "subscriptionTier": "free",
+      "subscriptionExpiresAt": null,
+      "createdAt": "2026-11-01T14:15:00Z"
+    },
+    {
+      "id": "usr_vikram",
+      "name": "Vikram Singh",
+      "email": "vikram@skillpath.ai",
+      "role": "learner",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80",
+      "education": "Diploma in Computer Systems Engineering",
+      "experience": "Freelance backend developer configuring REST APIs and Express services",
+      "targetCareerId": "car_backend_node",
+      "weeklyHours": 15,
+      "preferredStyle": "Project-driven architecture & debugging",
+      "streakDays": 9,
+      "subscriptionTier": "free",
+      "subscriptionExpiresAt": null,
+      "createdAt": "2026-10-28T11:45:00Z"
     }
   ],
   "skills": [
@@ -3255,6 +3319,22 @@
       "issuer": "DataCamp",
       "date": "2026-06-20",
       "url": "https://datacamp.com/certificate/demo-sql"
+    },
+    {
+      "id": "cert_priya_1",
+      "userId": "usr_priya",
+      "title": "HTML & CSS Foundations - Certificate of Mastery",
+      "issuer": "PromptWars Academy",
+      "date": "2026-10-30",
+      "url": "/courses/crs_html_css"
+    },
+    {
+      "id": "cert_rohan_1",
+      "userId": "usr_rohan",
+      "title": "Python for Data Science - Certificate of Mastery",
+      "issuer": "PromptWars Academy",
+      "date": "2026-11-05",
+      "url": "/courses/crs_python_ds"
     }
   ],
   "projects": [
@@ -3700,6 +3780,109 @@
         "top_ml_2": "completed",
         "top_ml_3": "completed",
         "top_ml_1": "completed"
+      }
+    },
+    {
+      "id": "prog_priya",
+      "userId": "usr_priya",
+      "enrolledCourseIds": [
+        "crs_html_css",
+        "crs_js_fund",
+        "crs_react"
+      ],
+      "completedCourseIds": [
+        "crs_html_css"
+      ],
+      "totalHoursSpent": 26.5,
+      "currentStreak": 14,
+      "lastActiveDate": "2026-11-17T04:44:10.345Z",
+      "activityHistory": [
+        {
+          "date": "2026-11-15",
+          "hours": 3,
+          "activity": "Mastered React Hooks & State"
+        }
+      ],
+      "topicProgress": {
+        "top_html_1": "completed",
+        "top_html_2": "completed",
+        "top_js_1": "completed",
+        "top_react_1": "study"
+      }
+    },
+    {
+      "id": "prog_rohan",
+      "userId": "usr_rohan",
+      "enrolledCourseIds": [
+        "crs_python_ds",
+        "crs_ml_found",
+        "crs_sql_db"
+      ],
+      "completedCourseIds": [
+        "crs_python_ds"
+      ],
+      "totalHoursSpent": 42,
+      "currentStreak": 21,
+      "lastActiveDate": "2026-11-17T04:44:10.354Z",
+      "activityHistory": [
+        {
+          "date": "2026-11-16",
+          "hours": 4,
+          "activity": "Trained Random Forest Classifier"
+        }
+      ],
+      "topicProgress": {
+        "top_pyds_1": "completed",
+        "top_pyds_2": "completed",
+        "top_ml_1": "completed",
+        "top_ml_2": "study"
+      }
+    },
+    {
+      "id": "prog_ananya",
+      "userId": "usr_ananya",
+      "enrolledCourseIds": [
+        "crs_python_ds",
+        "crs_sql_db"
+      ],
+      "completedCourseIds": [],
+      "totalHoursSpent": 12,
+      "currentStreak": 5,
+      "lastActiveDate": "2026-11-17T04:44:10.354Z",
+      "activityHistory": [
+        {
+          "date": "2026-11-14",
+          "hours": 2,
+          "activity": "SQL Window functions practice"
+        }
+      ],
+      "topicProgress": {
+        "top_sql_1": "completed",
+        "top_sql_2": "study"
+      }
+    },
+    {
+      "id": "prog_vikram",
+      "userId": "usr_vikram",
+      "enrolledCourseIds": [
+        "crs_js_fund",
+        "crs_nodejs",
+        "crs_sql_db"
+      ],
+      "completedCourseIds": [],
+      "totalHoursSpent": 19.5,
+      "currentStreak": 9,
+      "lastActiveDate": "2026-11-17T04:44:10.354Z",
+      "activityHistory": [
+        {
+          "date": "2026-11-15",
+          "hours": 2.5,
+          "activity": "Express middleware debugging"
+        }
+      ],
+      "topicProgress": {
+        "top_node_1": "completed",
+        "top_node_2": "study"
       }
     }
   ],

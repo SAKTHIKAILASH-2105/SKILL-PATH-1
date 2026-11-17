@@ -583,4 +583,207 @@ export const db = {
     saveDb(data);
     return newMsg;
   },
+
+  // ENROLLMENTS & ADMIN STUDENT ANALYTICS
+  enrollInCourse(userId: string, courseId: string): void {
+    const data = ensureDbFile();
+    let prog = data.progress.find((p) => p.userId === userId);
+    if (!prog) {
+      prog = this.getUserProgress(userId);
+    }
+    if (!prog.enrolledCourseIds) {
+      prog.enrolledCourseIds = [];
+    }
+    if (!prog.enrolledCourseIds.includes(courseId)) {
+      prog.enrolledCourseIds.push(courseId);
+      saveDb(data);
+    }
+  },
+
+  getEnrolledCourseIds(userId: string): string[] {
+    const data = ensureDbFile();
+    const prog = data.progress.find((p) => p.userId === userId);
+    if (prog?.enrolledCourseIds && prog.enrolledCourseIds.length > 0) {
+      return prog.enrolledCourseIds;
+    }
+    const user = data.users.find((u) => u.id === userId);
+    if (user?.targetCareerId === 'car_react_frontend') {
+      return ['crs_html_css', 'crs_js_fund', 'crs_react'];
+    } else if (user?.targetCareerId === 'car_ai_ml_engineer') {
+      return ['crs_python_ds', 'crs_ml_found', 'crs_sql_db'];
+    } else if (user?.targetCareerId === 'car_data_scientist') {
+      return ['crs_python_ds', 'crs_sql_db'];
+    } else if (user?.targetCareerId === 'car_backend_node') {
+      return ['crs_js_fund', 'crs_nodejs', 'crs_sql_db'];
+    }
+    return ['crs_fullstack', 'crs_html_css', 'crs_sql_db'];
+  },
+
+  getCourseEnrollmentStats() {
+    const data = ensureDbFile();
+    const learners = data.users.filter((u) => u.role === 'learner');
+    const courses = this.getCourses();
+    const certifications = data.certifications || [];
+
+    return courses.map((course) => {
+      const enrolledStudents: {
+        id: string;
+        name: string;
+        email: string;
+        avatar: string;
+        progressPercent: number;
+        topicsCompleted: number;
+        totalTopics: number;
+        hasCertificate: boolean;
+      }[] = [];
+
+      let completedCount = 0;
+      let totalProgress = 0;
+
+      const courseTopics = course.topics || [];
+      const totalTopics = courseTopics.length || 1;
+
+      for (const student of learners) {
+        const studentEnrolled = this.getEnrolledCourseIds(student.id);
+        const prog = data.progress.find((p) => p.userId === student.id);
+        const hasTopicProgress = courseTopics.some((t) => prog?.topicProgress && prog.topicProgress[t.id]);
+
+        if (studentEnrolled.includes(course.id) || hasTopicProgress) {
+          let doneTopics = 0;
+          if (prog?.topicProgress) {
+            for (const t of courseTopics) {
+              const status = prog.topicProgress[t.id];
+              if (status === 'completed' || status === 'skipped') {
+                doneTopics++;
+              }
+            }
+          }
+
+          const hasCert = certifications.some(
+            (c) => c.userId === student.id && (c.title?.includes(course.title) || c.url?.includes(course.id))
+          ) || (prog?.completedCourseIds?.includes(course.id) ?? false);
+
+          const percent = hasCert
+            ? 100
+            : totalTopics > 0
+            ? Math.min(100, Math.round((doneTopics / totalTopics) * 100))
+            : 0;
+
+          if (percent === 100 || hasCert) {
+            completedCount++;
+          }
+          totalProgress += percent;
+
+          enrolledStudents.push({
+            id: student.id,
+            name: student.name,
+            email: student.email,
+            avatar: student.avatar,
+            progressPercent: percent,
+            topicsCompleted: doneTopics,
+            totalTopics,
+            hasCertificate: hasCert,
+          });
+        }
+      }
+
+      const enrolledCount = enrolledStudents.length;
+      const avgProgress = enrolledCount > 0 ? Math.round(totalProgress / enrolledCount) : 0;
+
+      return {
+        courseId: course.id,
+        courseTitle: course.title,
+        category: course.category,
+        difficulty: course.difficulty,
+        duration: course.duration,
+        isPremium: course.isPremium,
+        totalTopics,
+        enrolledCount,
+        completedCount,
+        inProgressCount: enrolledCount - completedCount,
+        averageProgressPercent: avgProgress,
+        students: enrolledStudents,
+      };
+    });
+  },
+
+  getAllStudentsWithDetails() {
+    const data = ensureDbFile();
+    const learners = data.users.filter((u) => u.role === 'learner');
+    const courses = this.getCourses();
+    const careers = this.getCareers();
+    const certifications = data.certifications || [];
+    const submissions = data.submissions || [];
+
+    return learners.map((student) => {
+      const prog = this.getUserProgress(student.id);
+      const studentEnrolledIds = this.getEnrolledCourseIds(student.id);
+      const studentCerts = certifications.filter((c) => c.userId === student.id);
+      const studentSubs = submissions.filter((s) => s.userId === student.id);
+      const career = careers.find((c) => c.id === student.targetCareerId);
+
+      const enrolledCourses = studentEnrolledIds.map((cid) => {
+        const course = courses.find((c) => c.id === cid);
+        const courseTopics = course?.topics || [];
+        const totalTopics = courseTopics.length || 1;
+
+        let topicsCompleted = 0;
+        if (prog?.topicProgress) {
+          for (const t of courseTopics) {
+            const st = prog.topicProgress[t.id];
+            if (st === 'completed' || st === 'skipped') topicsCompleted++;
+          }
+        }
+
+        const isCompleted = studentCerts.some(
+          (c) => c.title?.includes(course?.title || '') || c.url?.includes(cid)
+        ) || (prog?.completedCourseIds?.includes(cid) ?? false);
+
+        const progressPercent = isCompleted
+          ? 100
+          : totalTopics > 0
+          ? Math.min(100, Math.round((topicsCompleted / totalTopics) * 100))
+          : 0;
+
+        return {
+          courseId: cid,
+          courseTitle: course?.title || cid,
+          difficulty: course?.difficulty || 'Intermediate',
+          category: course?.category || 'General',
+          totalTopics,
+          topicsCompleted,
+          progressPercent,
+          isCompleted,
+        };
+      });
+
+      const avgProg = enrolledCourses.length > 0
+        ? Math.round(enrolledCourses.reduce((acc, c) => acc + c.progressPercent, 0) / enrolledCourses.length)
+        : 0;
+
+      return {
+        id: student.id,
+        name: student.name,
+        email: student.email,
+        avatar: student.avatar,
+        education: student.education || 'Professional Learner',
+        experience: student.experience || 'Self-paced student',
+        targetCareerId: student.targetCareerId,
+        targetCareerTitle: career?.title || 'Full Stack Developer',
+        createdAt: student.createdAt,
+        streakDays: student.streakDays || 1,
+        weeklyHours: student.weeklyHours || 15,
+        preferredStyle: student.preferredStyle || 'Hands-on practice',
+        subscriptionTier: student.subscriptionTier || 'free',
+        enrolledCourses,
+        totalEnrolled: enrolledCourses.length,
+        overallProgress: avgProg,
+        certificates: studentCerts,
+        totalCertificates: studentCerts.length,
+        totalHoursSpent: prog.totalHoursSpent || 10,
+        lastActiveDate: prog.lastActiveDate || student.createdAt,
+        recentSubmissions: studentSubs.slice(0, 5),
+      };
+    });
+  },
 };

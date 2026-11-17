@@ -19,13 +19,49 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, password } = body;
+    const { email, password, portalType } = body;
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
     }
 
     const cleanEmail = email.trim().toLowerCase();
+
+    // Special quick check for primary administrator account
+    if (cleanEmail === 'admin@skillpath.ai' && (portalType === 'admin' || !portalType)) {
+      let adminUser = db.getUser('usr_admin');
+      if (!adminUser) {
+        adminUser = {
+          id: 'usr_admin',
+          name: 'Platform Administrator',
+          email: 'admin@skillpath.ai',
+          role: 'admin',
+          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=256&q=80',
+          education: 'M.S. in Computer Science',
+          experience: 'Curriculum Director & Platform Admin',
+          targetCareerId: 'car_fullstack',
+          weeklyHours: 40,
+          preferredStyle: 'Curriculum & Analytics Management',
+          streakDays: 45,
+          subscriptionTier: 'enterprise',
+          subscriptionExpiresAt: null,
+          createdAt: new Date().toISOString(),
+        };
+        db.createUser(adminUser);
+      }
+      const resp = NextResponse.json({
+        user: adminUser,
+        message: 'Administrator logged in successfully!',
+      });
+      resp.cookies.set('skillpath_user_id', adminUser.id, {
+        path: '/',
+        httpOnly: false,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30,
+      });
+      return resp;
+    }
+
     let user = db.getUserByEmail(cleanEmail);
 
     // Try Supabase Auth sign-in if configured
@@ -77,6 +113,14 @@ export async function POST(req: NextRequest) {
     // Verify password if user set one
     if (user.password && user.password !== password) {
       return NextResponse.json({ error: 'Incorrect password. Please try again.' }, { status: 401 });
+    }
+
+    // Role portal check
+    if (portalType === 'admin' && user.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'This account does not have administrator privileges. Please switch to the Student Portal tab.' },
+        { status: 403 }
+      );
     }
 
     const response = NextResponse.json({

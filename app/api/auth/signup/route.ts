@@ -6,7 +6,7 @@ import { User } from '@/lib/types';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password, targetCareerId } = body;
+    const { name, email, password, targetCareerId, accountType = 'student', adminPasscode } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json({ error: 'Please enter your full name.' }, { status: 400 });
@@ -16,6 +16,16 @@ export async function POST(req: NextRequest) {
     }
     if (!password || password.length < 6) {
       return NextResponse.json({ error: 'Password must be at least 6 characters.' }, { status: 400 });
+    }
+
+    if (accountType === 'admin') {
+      const validCodes = ['ADMIN2026', 'SKILLPATH_ADMIN', 'ADMIN'];
+      if (!adminPasscode || !validCodes.includes(adminPasscode.trim().toUpperCase())) {
+        return NextResponse.json(
+          { error: 'Invalid Administrator Passcode. Enter ADMIN2026 to register as an Administrator.' },
+          { status: 403 }
+        );
+      }
     }
 
     const cleanEmail = email.trim().toLowerCase();
@@ -68,15 +78,15 @@ export async function POST(req: NextRequest) {
       id: supabaseUserId || `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       name: cleanName,
       email: cleanEmail,
-      role: 'learner',
+      role: accountType === 'admin' ? 'admin' : 'learner',
       avatar: randomAvatar,
-      education: 'Self-Directed / Professional Development',
-      experience: '0-2 years (Building Portfolio)',
+      education: accountType === 'admin' ? 'Platform Administration' : 'Self-Directed / Professional Development',
+      experience: accountType === 'admin' ? 'Platform Manager & Curriculum Director' : '0-2 years (Building Portfolio)',
       targetCareerId: targetCareerId || 'car_fullstack',
-      weeklyHours: 15,
-      preferredStyle: 'Hands-on projects & video lessons',
+      weeklyHours: accountType === 'admin' ? 35 : 15,
+      preferredStyle: accountType === 'admin' ? 'Curriculum Analytics' : 'Hands-on projects & video lessons',
       streakDays: 1,
-      subscriptionTier: 'free',
+      subscriptionTier: accountType === 'admin' ? 'enterprise' : 'free',
       subscriptionExpiresAt: null,
       password,
       supabaseId: supabaseUserId,
@@ -84,6 +94,12 @@ export async function POST(req: NextRequest) {
     };
 
     db.createUser(newUser);
+
+    // If student, enroll in default courses
+    if (newUser.role === 'learner') {
+      const defaultCourses = ['crs_fullstack', 'crs_html_css', 'crs_sql_db'];
+      defaultCourses.forEach((cid) => db.enrollInCourse(newUser.id, cid));
+    }
 
     const response = NextResponse.json({
       user: newUser,
