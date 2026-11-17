@@ -25,11 +25,11 @@ async function runVerification() {
   console.log('🚀 STARTING SKILLPATH AI DEMO FLOW VERIFICATION');
   console.log('====================================================\n');
 
-  // Step 1: Login as Aarav
-  console.log('Step 1: Authenticating as Aarav Sharma...');
+  // Step 1: Login as Administrator
+  console.log('Step 1: Authenticating as Administrator...');
   const loginRes = await request('/api/auth', {
     method: 'POST',
-    body: JSON.stringify({ demoUserId: 'usr_aarav' }),
+    body: JSON.stringify({ email: 'admin@skillpath.ai', password: 'admin123', portalType: 'admin' }),
   });
   console.log(`✓ Login status: ${loginRes.status}, User: ${loginRes.data.user.name} (${loginRes.data.user.role})`);
 

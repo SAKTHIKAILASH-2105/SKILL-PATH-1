@@ -7,14 +7,14 @@ export async function GET(
   context: { params: Promise<{ assessmentId: string }> }
 ) {
   const { assessmentId } = await context.params;
-  const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+  const userId = req.cookies.get('skillpath_user_id')?.value;
 
   const assessment = db.getAssessment(assessmentId);
   if (!assessment) {
     return NextResponse.json({ error: 'Assessment not found' }, { status: 404 });
   }
 
-  const submissions = db.getSubmissions(userId);
+  const submissions = userId ? db.getSubmissions(userId) : [];
   const userSubmissions = submissions.filter((s) => s.assessmentId === assessmentId);
 
   return NextResponse.json({
@@ -29,7 +29,8 @@ export async function POST(
 ) {
   try {
     const { assessmentId } = await context.params;
-    const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+    const userId = req.cookies.get('skillpath_user_id')?.value;
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await req.json();
     const { answers } = body;
 

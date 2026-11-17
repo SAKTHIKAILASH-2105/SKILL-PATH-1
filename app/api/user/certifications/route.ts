@@ -5,7 +5,8 @@ import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+    const userId = req.cookies.get('skillpath_user_id')?.value;
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await req.json();
     const { title, issuer, date, url } = body;
 

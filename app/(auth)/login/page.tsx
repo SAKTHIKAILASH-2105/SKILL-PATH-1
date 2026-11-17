@@ -50,7 +50,7 @@ export default function LoginPage() {
       setEmail('admin@skillpath.ai');
       setPassword('admin123');
     } else {
-      setEmail('aarav@skillpath.ai');
+      setEmail('');
       setPassword('');
     }
   };
@@ -324,23 +324,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Student Switcher for convenience */}
-          {portalType === 'student' && (
-            <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-800/60">
-              <span>Demo Student:</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail('aarav@skillpath.ai');
-                  setPassword('demo123');
-                }}
-                className="text-blue-400 hover:text-blue-300 font-medium hover:underline"
-              >
-                Autofill Aarav Sharma
-              </button>
-            </div>
-          )}
 
           {/* Bottom Switch to Sign Up */}
           <div className="text-center pt-2 border-t border-slate-800/80 space-y-2">

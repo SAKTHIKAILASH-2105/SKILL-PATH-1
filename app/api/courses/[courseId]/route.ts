@@ -6,7 +6,7 @@ export async function GET(
   context: { params: Promise<{ courseId: string }> }
 ) {
   const { courseId } = await context.params;
-  const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+  const userId = req.cookies.get('skillpath_user_id')?.value;
 
   const course = db.getCourse(courseId);
   if (!course) {
@@ -15,7 +15,7 @@ export async function GET(
 
   const allSkills = db.getSkills();
   const skillMap = new Map(allSkills.map((s) => [s.id, s.name]));
-  const userSkills = db.getUserSkills(userId);
+  const userSkills = userId ? db.getUserSkills(userId) : [];
   const userSkillMap = new Map(userSkills.map((us) => [us.skillId, us]));
 
   const prerequisites = course.prerequisiteSkillIds.map((sid) => {
@@ -39,14 +39,14 @@ export async function GET(
     ? db.getAssessment(course.prerequisiteAssessmentId)
     : undefined;
 
-  const submissions = db.getSubmissions(userId);
+  const submissions = userId ? db.getSubmissions(userId) : [];
   const latestSubmission = assessment
     ? submissions.find((s) => s.assessmentId === assessment.id)
     : undefined;
 
-  const progress = db.getUserProgress(userId);
-  const topicProgress = db.getTopicProgress(userId);
-  const user = db.getUser(userId) || db.getUser('usr_aarav');
+  const progress = userId ? db.getUserProgress(userId) : { completedCourseIds: [] as string[] };
+  const topicProgress = userId ? db.getTopicProgress(userId) : {};
+  const user = userId ? db.getUser(userId) : null;
 
   return NextResponse.json({
     course: {

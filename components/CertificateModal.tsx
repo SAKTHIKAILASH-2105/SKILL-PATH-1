@@ -34,7 +34,7 @@ export function CertificateModal({
   onClose,
   courseTitle,
   courseId,
-  userName = 'Aarav Sharma',
+  userName = 'Student',
   skills = [],
   completionDate,
 }: CertificateModalProps) {

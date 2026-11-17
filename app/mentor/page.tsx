@@ -64,7 +64,7 @@ export default function MentorPage() {
     // Optimistic user message
     const tempUserMsg: MentorMessage = {
       id: `temp_${Date.now()}`,
-      userId: 'usr_aarav',
+      userId: '',
       sender: 'user',
       text,
       timestamp: new Date().toISOString(),

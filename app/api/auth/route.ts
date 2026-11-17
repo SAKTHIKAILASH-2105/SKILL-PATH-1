@@ -29,6 +29,9 @@ export async function POST(req: NextRequest) {
 
     // Special quick check for primary administrator account
     if (cleanEmail === 'admin@skillpath.ai' && (portalType === 'admin' || !portalType)) {
+      if (password !== 'admin123') {
+        return NextResponse.json({ error: 'Incorrect administrator password. Please try again.' }, { status: 401 });
+      }
       let adminUser = db.getUser('usr_admin');
       if (!adminUser) {
         adminUser = {

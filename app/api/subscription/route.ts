@@ -3,7 +3,8 @@ import { db } from '@/lib/db';
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+    const userId = req.cookies.get('skillpath_user_id')?.value;
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await req.json();
     const { plan, billingCycle } = body; // 'pro' | 'enterprise', 'monthly' | 'quarterly' | 'annual'
 

@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { AgentOrchestrator } from '@/lib/agents/orchestrator';
 
 export async function GET(req: NextRequest) {
-  const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+  const userId = req.cookies.get('skillpath_user_id')?.value;
   const { searchParams } = new URL(req.url);
 
   const type = searchParams.get('type');
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   let resources = db.getResources();
   const allSkills = db.getSkills();
   const skillMap = new Map(allSkills.map((s) => [s.id, s.name]));
-  const progress = db.getUserProgress(userId);
+  const progress = userId ? db.getUserProgress(userId) : { completedResourceIds: [] as string[] };
 
   if (type && type !== 'all') {
     resources = resources.filter((r) => r.type.toLowerCase() === type.toLowerCase());
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const user = db.getUser(userId);
+  const user = userId ? db.getUser(userId) : null;
 
   const enriched = resources.map((r) => ({
     ...r,
@@ -57,7 +57,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+    const userId = req.cookies.get('skillpath_user_id')?.value;
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await req.json();
     const { resourceId } = body;
 

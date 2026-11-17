@@ -223,9 +223,9 @@ export default function AdminPage() {
               <span>Total Enrolled Students</span>
               <Users className="w-4 h-4 text-blue-600" />
             </div>
-            <div className="text-3xl font-black text-slate-900">{students.length || analytics.totalLearners || 1}</div>
+            <div className="text-3xl font-black text-slate-900">{students.length}</div>
             <div className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-              <span>{analytics.activeLearners || students.length} actively learning</span>
+              <span>{analytics.activeLearners ?? students.length} actively learning</span>
             </div>
           </div>
 
@@ -235,7 +235,7 @@ export default function AdminPage() {
               <span>Course Enrollments</span>
               <BookOpen className="w-4 h-4 text-purple-600" />
             </div>
-            <div className="text-3xl font-black text-slate-900">{analytics.totalEnrollments || 12}</div>
+            <div className="text-3xl font-black text-slate-900">{analytics.totalEnrollments ?? 0}</div>
             <div className="text-[11px] text-slate-500">Across {courses.length} catalog courses</div>
           </div>
 
@@ -245,7 +245,7 @@ export default function AdminPage() {
               <span>Certificates Issued</span>
               <Award className="w-4 h-4 text-amber-500" />
             </div>
-            <div className="text-3xl font-black text-slate-900">{analytics.totalCertificatesIssued || 3}</div>
+            <div className="text-3xl font-black text-slate-900">{analytics.totalCertificatesIssued ?? 0}</div>
             <div className="text-[11px] text-amber-600 font-semibold">Verified credentials</div>
           </div>
 
@@ -255,8 +255,8 @@ export default function AdminPage() {
               <span>Avg Diagnostic Score</span>
               <TrendingUp className="w-4 h-4 text-emerald-600" />
             </div>
-            <div className="text-3xl font-black text-slate-900">{analytics.averageAssessmentScore || 74}%</div>
-            <div className="text-[11px] text-slate-500">Readiness pass rate: {analytics.assessmentPassRate || 68}%</div>
+            <div className="text-3xl font-black text-slate-900">{analytics.averageAssessmentScore ?? 0}%</div>
+            <div className="text-[11px] text-slate-500">Readiness pass rate: {analytics.assessmentPassRate ?? 0}%</div>
           </div>
         </div>
 
@@ -487,7 +487,24 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {filteredStudents.map((student: any) => (
+                    {filteredStudents.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-14 text-center">
+                          <div className="max-w-md mx-auto text-center space-y-2">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                              <Users className="w-6 h-6" />
+                            </div>
+                            <h4 className="font-bold text-sm text-slate-800">No Registered Students Found</h4>
+                            <p className="text-xs text-slate-500">
+                              {searchQuery || selectedCourseFilter !== 'all'
+                                ? 'No student matches your search or filter criteria. Try resetting the filters.'
+                                : 'When students sign up or sign in using their email or Google account, their registered details, enrolled courses, and live scores will appear here in real time.'}
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredStudents.map((student: any) => (
                       <tr key={student.id} className="hover:bg-slate-50/80 transition-colors">
                         {/* Student Name & Avatar */}
                         <td className="py-4 px-6">
@@ -587,7 +604,8 @@ export default function AdminPage() {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                    ))
+                  )}
                   </tbody>
                 </table>
               </div>

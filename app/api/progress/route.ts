@@ -3,8 +3,9 @@ import { db } from '@/lib/db';
 import { AgentOrchestrator } from '@/lib/agents/orchestrator';
 
 export async function GET(req: NextRequest) {
-  const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
-  const user = db.getUser(userId) || db.getUser('usr_aarav');
+  const userId = req.cookies.get('skillpath_user_id')?.value;
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = db.getUser(userId);
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
   const progress = db.getUserProgress(userId);

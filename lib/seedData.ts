@@ -16,99 +16,20 @@ import {
 
 export const INITIAL_USERS: User[] = [
   {
-    id: 'usr_aarav',
-    name: 'Aarav Sharma',
-    email: 'aarav@skillpath.ai',
-    role: 'learner',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
-    education: 'B.Tech in Computer Science (3rd Year)',
-    experience: '6-month academic internship developing Python data utilities and SQL reports',
-    targetCareerId: 'car_fullstack',
-    weeklyHours: 15,
-    preferredStyle: 'Hands-on projects & interactive coding sandbox',
-    streakDays: 7,
-    subscriptionTier: 'free',
-    subscriptionExpiresAt: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'usr_priya',
-    name: 'Priya Patel',
-    email: 'priya@skillpath.ai',
-    role: 'learner',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80',
-    education: 'B.S. in Information Technology',
-    experience: 'Junior Web Developer with 1 year experience building UI prototypes',
-    targetCareerId: 'car_react_frontend',
-    weeklyHours: 12,
-    preferredStyle: 'Visual tutorials, video code-alongs and quizzes',
-    streakDays: 14,
-    subscriptionTier: 'pro',
-    subscriptionExpiresAt: '2027-01-01T00:00:00Z',
-    createdAt: '2026-10-15T10:00:00Z',
-  },
-  {
-    id: 'usr_rohan',
-    name: 'Rohan Mehta',
-    email: 'rohan@skillpath.ai',
-    role: 'learner',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
-    education: 'B.E. in Artificial Intelligence & Data',
-    experience: 'Academic research in predictive modeling and deep learning architectures',
-    targetCareerId: 'car_ai_ml_engineer',
-    weeklyHours: 18,
-    preferredStyle: 'Mathematical theory followed by code implementation',
-    streakDays: 21,
-    subscriptionTier: 'pro',
-    subscriptionExpiresAt: '2027-03-15T00:00:00Z',
-    createdAt: '2026-09-20T08:30:00Z',
-  },
-  {
-    id: 'usr_ananya',
-    name: 'Ananya Iyer',
-    email: 'ananya@skillpath.ai',
-    role: 'learner',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=256&q=80',
-    education: 'B.Sc. in Applied Statistics & Mathematics',
-    experience: 'Data Analyst intern creating automated SQL ETL dashboards',
-    targetCareerId: 'car_data_scientist',
-    weeklyHours: 10,
-    preferredStyle: 'Hands-on dataset investigations & interactive quizzes',
-    streakDays: 5,
-    subscriptionTier: 'free',
-    subscriptionExpiresAt: null,
-    createdAt: '2026-11-01T14:15:00Z',
-  },
-  {
-    id: 'usr_vikram',
-    name: 'Vikram Singh',
-    email: 'vikram@skillpath.ai',
-    role: 'learner',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
-    education: 'Diploma in Computer Systems Engineering',
-    experience: 'Freelance backend developer configuring REST APIs and Express services',
-    targetCareerId: 'car_backend_node',
-    weeklyHours: 15,
-    preferredStyle: 'Project-driven architecture & debugging',
-    streakDays: 9,
-    subscriptionTier: 'free',
-    subscriptionExpiresAt: null,
-    createdAt: '2026-10-28T11:45:00Z',
-  },
-  {
     id: 'usr_admin',
-    name: 'Admin User',
+    name: 'Administrator',
     email: 'admin@skillpath.ai',
     role: 'admin',
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=256&q=80',
-    education: 'M.S. in Computer Science',
-    experience: 'Staff Learning Architect & Curriculum Director',
+    education: 'Institutional Administration',
+    experience: 'Platform Manager & Curriculum Director',
     targetCareerId: 'car_fullstack',
-    weeklyHours: 20,
-    preferredStyle: 'Curriculum optimization and pedagogical analysis',
-    streakDays: 45,
+    weeklyHours: 40,
+    preferredStyle: 'Analytics & Management',
+    streakDays: 1,
     subscriptionTier: 'enterprise',
-    subscriptionExpiresAt: '2028-12-31T23:59:59Z',
+    subscriptionExpiresAt: null,
+    password: 'admin123',
     createdAt: new Date().toISOString(),
   },
 ];
@@ -134,46 +55,11 @@ export const INITIAL_SKILLS: Skill[] = [
   { id: 'skl_dataviz', name: 'Data Visualization', category: 'AI & Data', description: 'Exploratory data analysis, charts, Matplotlib, Seaborn, and interactive dashboards', importance: 'Medium' },
 ];
 
-export const INITIAL_USER_SKILLS: UserSkill[] = [
-  { id: 'us_1', userId: 'usr_aarav', skillId: 'skl_python', proficiency: 'Intermediate', verifiedScore: 72, lastUpdated: new Date().toISOString() },
-  { id: 'us_2', userId: 'usr_aarav', skillId: 'skl_sql', proficiency: 'Intermediate', verifiedScore: 68, lastUpdated: new Date().toISOString() },
-  { id: 'us_3', userId: 'usr_aarav', skillId: 'skl_html', proficiency: 'Beginner', verifiedScore: 35, lastUpdated: new Date().toISOString() },
-  { id: 'us_4', userId: 'usr_aarav', skillId: 'skl_js', proficiency: 'Beginner', verifiedScore: 20, lastUpdated: new Date().toISOString() },
-  { id: 'us_5', userId: 'usr_aarav', skillId: 'skl_dom', proficiency: 'Not Started', verifiedScore: 0, lastUpdated: new Date().toISOString() },
-  { id: 'us_6', userId: 'usr_aarav', skillId: 'skl_es6', proficiency: 'Not Started', verifiedScore: 0, lastUpdated: new Date().toISOString() },
-  { id: 'us_7', userId: 'usr_aarav', skillId: 'skl_react', proficiency: 'Not Started', verifiedScore: 0, lastUpdated: new Date().toISOString() },
-  { id: 'us_8', userId: 'usr_aarav', skillId: 'skl_nodejs', proficiency: 'Not Started', verifiedScore: 0, lastUpdated: new Date().toISOString() },
-];
+export const INITIAL_USER_SKILLS: UserSkill[] = [];
 
-export const INITIAL_CERTIFICATIONS: UserCertification[] = [
-  {
-    id: 'cert_1',
-    userId: 'usr_aarav',
-    title: 'Python for Data Handling & Automation',
-    issuer: 'Coursera / University of Michigan',
-    date: '2026-03-15',
-    url: 'https://coursera.org/verify/demo-python',
-  },
-  {
-    id: 'cert_2',
-    userId: 'usr_aarav',
-    title: 'SQL Relational Queries Specialization',
-    issuer: 'DataCamp',
-    date: '2026-06-20',
-    url: 'https://datacamp.com/certificate/demo-sql',
-  },
-];
+export const INITIAL_CERTIFICATIONS: UserCertification[] = [];
 
-export const INITIAL_PROJECTS: UserProject[] = [
-  {
-    id: 'proj_1',
-    userId: 'usr_aarav',
-    title: 'Automated CSV-to-SQL Pipeline',
-    description: 'Python CLI script utilizing pandas and SQLAlchemy to ingest messy transaction CSVs, sanitize data, and write to PostgreSQL with schema validation.',
-    techStack: ['Python', 'SQL', 'PostgreSQL', 'Pandas'],
-    githubUrl: 'https://github.com/aarav-dev/automated-pipeline-demo',
-  },
-];
+export const INITIAL_PROJECTS: UserProject[] = [];
 
 export const INITIAL_CAREERS: Career[] = [
   {
@@ -1770,15 +1656,15 @@ export const INITIAL_ASSESSMENTS: Assessment[] = [
       {
         id: 'q_es6_1',
         topic: 'ES6 & Modern JS',
-        question: 'Given `const user = { name: "Aarav", role: "Dev" }; const { name, age = 22 } = user;`, what are `name` and `age`?',
+        question: 'Given `const user = { name: "Alex", role: "Dev" }; const { name, age = 22 } = user;`, what are `name` and `age`?',
         type: 'multiple-choice',
         options: [
-          'name = "Aarav", age = undefined',
-          'name = "Aarav", age = 22',
+          'name = "Alex", age = undefined',
+          'name = "Alex", age = 22',
           'name = "user", age = 22',
           'SyntaxError: default value not allowed in destructuring',
         ],
-        correctAnswer: 'name = "Aarav", age = 22',
+        correctAnswer: 'name = "Alex", age = 22',
         explanation: 'Object destructuring allows default parameter fallback (`age = 22`) when the key does not exist on the source object.',
       },
       {
@@ -2070,7 +1956,7 @@ export const INITIAL_RESOURCES: LearningResource[] = [
 export const INITIAL_ROADMAP: RoadmapStage[] = [
   {
     id: 'stg_1',
-    userId: 'usr_aarav',
+    userId: '',
     careerId: 'car_fullstack',
     stageNumber: 1,
     title: 'HTML & CSS Foundations',
@@ -2084,7 +1970,7 @@ export const INITIAL_ROADMAP: RoadmapStage[] = [
   },
   {
     id: 'stg_2',
-    userId: 'usr_aarav',
+    userId: '',
     careerId: 'car_fullstack',
     stageNumber: 2,
     title: 'JavaScript Fundamentals',
@@ -2098,7 +1984,7 @@ export const INITIAL_ROADMAP: RoadmapStage[] = [
   },
   {
     id: 'stg_3',
-    userId: 'usr_aarav',
+    userId: '',
     careerId: 'car_fullstack',
     stageNumber: 3,
     title: 'DOM and Browser APIs',
@@ -2112,7 +1998,7 @@ export const INITIAL_ROADMAP: RoadmapStage[] = [
   },
   {
     id: 'stg_4',
-    userId: 'usr_aarav',
+    userId: '',
     careerId: 'car_fullstack',
     stageNumber: 4,
     title: 'React Framework Mastery',
@@ -2127,7 +2013,7 @@ export const INITIAL_ROADMAP: RoadmapStage[] = [
   },
   {
     id: 'stg_5',
-    userId: 'usr_aarav',
+    userId: '',
     careerId: 'car_fullstack',
     stageNumber: 5,
     title: 'Node.js and Express Backend',
@@ -2142,7 +2028,7 @@ export const INITIAL_ROADMAP: RoadmapStage[] = [
   },
   {
     id: 'stg_6',
-    userId: 'usr_aarav',
+    userId: '',
     careerId: 'car_fullstack',
     stageNumber: 6,
     title: 'Databases and REST APIs',
@@ -2156,7 +2042,7 @@ export const INITIAL_ROADMAP: RoadmapStage[] = [
   },
   {
     id: 'stg_7',
-    userId: 'usr_aarav',
+    userId: '',
     careerId: 'car_fullstack',
     stageNumber: 7,
     title: 'Authentication and Deployment',
@@ -2170,7 +2056,7 @@ export const INITIAL_ROADMAP: RoadmapStage[] = [
   },
   {
     id: 'stg_8',
-    userId: 'usr_aarav',
+    userId: '',
     careerId: 'car_fullstack',
     stageNumber: 8,
     title: 'Final Full-Stack Capstone Project',
@@ -2185,142 +2071,18 @@ export const INITIAL_ROADMAP: RoadmapStage[] = [
 ];
 
 export const INITIAL_USER_PROGRESS: UserProgress = {
-  id: 'prog_aarav',
-  userId: 'usr_aarav',
+  id: 'prog_init',
+  userId: '',
   completedResourceIds: [],
   completedExerciseIds: [],
   completedStageIds: [],
   completedCourseIds: [],
-  totalHoursSpent: 18.5,
-  currentStreak: 7,
+  totalHoursSpent: 0,
+  currentStreak: 1,
   lastActiveDate: new Date().toISOString(),
-  activityHistory: [
-    { date: '2026-11-08', hours: 2.5, activity: 'Completed Python SQL pipeline optimization' },
-    { date: '2026-11-09', hours: 3.0, activity: 'Reviewed relational database index tuning' },
-    { date: '2026-11-10', hours: 2.0, activity: 'Practiced HTML5 forms & semantic layouts' },
-    { date: '2026-11-11', hours: 3.5, activity: 'Configured Tailwind layout sandbox' },
-    { date: '2026-11-12', hours: 2.5, activity: 'Explored JavaScript primitives & hoisting' },
-    { date: '2026-11-13', hours: 2.5, activity: 'Started HTML & CSS Foundations module' },
-    { date: '2026-11-14', hours: 2.5, activity: 'Active study session on SkillPath AI' },
-  ],
+  activityHistory: [],
 };
 
-export const INITIAL_AGENT_LOGS: AgentLog[] = [
-  {
-    id: 'log_init_1',
-    userId: 'usr_aarav',
-    agentName: 'Profile Analyzer Agent',
-    agentRole: 'Learner Skill Normalization',
-    status: 'completed',
-    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-    input: {
-      declaredSkills: ['Python (Intermediate)', 'SQL (Intermediate)', 'HTML (Beginner)'],
-      certifications: ['Python for Data Handling - Coursera', 'SQL Relational Queries - DataCamp'],
-      projects: ['Automated CSV-to-SQL Pipeline'],
-    },
-    output: {
-      normalizedProficiencies: { Python: 'Intermediate (72%)', SQL: 'Intermediate (68%)', HTML: 'Beginner (35%)' },
-      learningVelocity: '15 hrs/week steady velocity',
-      pedagogicalStyle: 'Hands-on project-centric',
-    },
-    summary: 'Analyzed Aarav’s declared competencies. Confirmed solid Python & SQL foundations; detected missing frontend JavaScript & React foundations.',
-    decisionImpact: 'Flagged JavaScript, DOM manipulation, and modern ES6 as mandatory prerequisites for Full Stack roadmap.',
-  },
-  {
-    id: 'log_init_2',
-    userId: 'usr_aarav',
-    agentName: 'Career Analysis Agent',
-    agentRole: 'Target Career Skill Breakdown',
-    status: 'completed',
-    timestamp: new Date(Date.now() - 3600000 * 1.8).toISOString(),
-    input: { targetCareerId: 'car_fullstack', title: 'Full Stack Developer' },
-    output: {
-      requiredSkillsCount: 12,
-      criticalCore: ['HTML', 'JavaScript', 'DOM', 'ES6', 'React', 'Node.js', 'REST APIs'],
-      recommendedTotalHours: 185,
-    },
-    summary: 'Evaluated market expectations for Full Stack Developer role. 7 critical competencies identified.',
-    decisionImpact: 'Generated competency graph and assigned prerequisite dependency hierarchy.',
-  },
-  {
-    id: 'log_init_3',
-    userId: 'usr_aarav',
-    agentName: 'Skill Gap Agent',
-    agentRole: 'Deficiency & Readiness Scoring',
-    status: 'completed',
-    timestamp: new Date(Date.now() - 3600000 * 1.5).toISOString(),
-    input: {
-      userSkills: ['Python (72%)', 'SQL (68%)', 'HTML (35%)', 'JS (20%)'],
-      careerSkills: ['HTML', 'CSS', 'JS', 'DOM', 'ES6', 'React', 'Node.js', 'Express', 'REST APIs', 'SQL'],
-    },
-    output: {
-      strengths: ['SQL (Intermediate)', 'Python (Intermediate)'],
-      weaknesses: ['HTML (Beginner)', 'JavaScript (Beginner)'],
-      missing: ['DOM', 'ES6', 'React', 'Node.js', 'Express', 'REST APIs'],
-      overallReadiness: 34,
-    },
-    summary: 'Calculated 34% baseline readiness for Full Stack Developer. Strong backend/data foundations, critical gap in frontend client runtime.',
-    decisionImpact: 'Prioritized Stage 1 (HTML/CSS) and Stage 2 (JavaScript Fundamentals).',
-  },
-  {
-    id: 'log_init_4',
-    userId: 'usr_aarav',
-    agentName: 'Learning Path Agent',
-    agentRole: 'Personalized Roadmap Sequencing',
-    status: 'completed',
-    timestamp: new Date(Date.now() - 3600000 * 1.2).toISOString(),
-    input: { readiness: 34, userWeeklyHours: 15, targetCareer: 'Full Stack Developer' },
-    output: { totalStages: 8, estimatedWeeks: 12.3, firstAvailableStage: 'HTML & CSS Foundations' },
-    summary: 'Synthesized an 8-stage progressive roadmap respecting "Learn only what you need before learning what you want" constraint.',
-    decisionImpact: 'Locked React and Node.js advanced stages until foundational prerequisites are completed and verified.',
-  },
-  {
-    id: 'log_init_5',
-    userId: 'usr_aarav',
-    agentName: 'Resource Recommendation Agent',
-    agentRole: 'Resource Curation & Tiering',
-    status: 'completed',
-    timestamp: new Date(Date.now() - 3600000 * 1).toISOString(),
-    input: { activeStage: 'HTML & CSS Foundations', weakSkills: ['HTML', 'CSS', 'JavaScript'] },
-    output: {
-      freeRecommendations: ['Semantic HTML5 & Accessibility Best Practices (Web.dev)', 'JavaScript Functions & Scope (MDN)'],
-      premiumRecommendations: ['React 19 Enterprise Architecture (Pro)'],
-    },
-    summary: 'Ranked best-in-class free resources first to lower barrier to mastery, reserving paid resources for specialized advanced projects.',
-    decisionImpact: 'Assigned MDN and freeCodeCamp high-yield tutorials to Aarav’s dashboard quick action queue.',
-  },
-];
+export const INITIAL_AGENT_LOGS: AgentLog[] = [];
 
-export const INITIAL_MENTOR_MESSAGES: MentorMessage[] = [
-  {
-    id: 'msg_1',
-    userId: 'usr_aarav',
-    sender: 'mentor',
-    text: 'Hello Aarav! Welcome to SkillPath AI. I am your autonomous AI Mentor. I have analyzed your background: your Python and SQL foundations are great assets, but to become a Full Stack Developer, we need to build your JavaScript and DOM fundamentals before touching React.',
-    actionSuggestion: {
-      label: 'Explore React Readiness Assessment',
-      actionType: 'navigate',
-      payload: '/courses/crs_react',
-    },
-    timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
-  },
-  {
-    id: 'msg_2',
-    userId: 'usr_aarav',
-    sender: 'user',
-    text: 'Why do I need to learn JavaScript deeply before React? Can’t I just start React right away?',
-    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-  },
-  {
-    id: 'msg_3',
-    userId: 'usr_aarav',
-    sender: 'mentor',
-    text: 'Great question! React isn’t a separate programming language—it’s pure JavaScript. Every React component relies heavily on ES6 array methods (`.map`, `.filter`), object destructuring, arrow functions, closures, and async Promises. If you jump straight into React without mastering JavaScript functions and DOM bubbling, you will struggle to debug component state re-renders and props passing.\n\nOur motto is: "Learn only what you need before learning what you want." Take the 5-minute diagnostic on React to see where you stand!',
-    actionSuggestion: {
-      label: 'Take React Prerequisite Diagnostic',
-      actionType: 'take_assessment',
-      payload: 'asm_react_prereq',
-    },
-    timestamp: new Date(Date.now() - 3600000 * 1.5).toISOString(),
-  },
-];
+export const INITIAL_MENTOR_MESSAGES: MentorMessage[] = [];

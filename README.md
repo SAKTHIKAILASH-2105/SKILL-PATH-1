@@ -71,14 +71,14 @@ All records are persistently stored in `data/db.json` with atomic reads and writ
 
 ---
 
-## 🔑 Demo Credentials
+## 🔑 Authentication & Portals
 
-| Role | Name | Email | Password | Pre-seeded Profile |
+SkillPath AI provides two dedicated access portals with full authentication:
+
+| Portal | Role | Email | Password / OAuth | Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
-| **Learner** | **Aarav Sharma** | `aarav@skillpath.ai` | Any password | Python: Intermediate, SQL: Intermediate, HTML: Beginner, JS: Beginner. Target: Full Stack Developer. |
-| **Admin** | **Admin User** | `admin@skillpath.ai` | Any password | Access to analytics, learners list, and full CRUD over Careers, Courses, Skills, and Resources. |
-
-> Quick 1-click login buttons are provided on the `/login` page and in the top navigation header switcher.
+| **Admin Portal** | **Platform Administrator** | `admin@skillpath.ai` | `admin123` | Monitor student enrollments across all courses, inspect student profiles, review certifications, and manage curriculum catalog (Courses, Careers, Skills, Resources). |
+| **Student Portal** | **Learner** | Student Email or **Google Sign-In** | Student Password / Google OAuth | Personalized roadmaps, course study topics, diagnostics, interactive quizzes, automated certificates, and AI mentoring. |
 
 ---
 
@@ -113,56 +113,20 @@ This runs the automated 19-step simulation test script (`scripts/verify-flow.mjs
 
 ---
 
-## 🎯 19-Step Demo Walkthrough
+## 🎯 Core Features & Platform Walkthrough
 
-1. **Login as Aarav**: Navigate to `/login` and click **"Aarav Sharma (Learner)"**.
-2. **View Dashboard (`/dashboard`)**:
-   - Notice Aarav's target career: **Full Stack Developer** (12% initial readiness).
-   - See current verified skills: **Python: Intermediate (72%)**, **SQL: Intermediate (68%)**, **HTML: Beginner (35%)**, **JavaScript: Beginner (20%)**.
-   - Review the **Skill Competency Radar Chart** and **Weekly Velocity Chart**.
-3. **Open Course Catalog (`/courses`)**:
-   - Inspect **React Developer Path**.
-   - Notice prerequisite gatekeeper: **Diagnostic Required**.
-4. **Take Diagnostic Assessment (`/courses/crs_react` → `/assessments/asm_react_prereq`)**:
-   - Start the 8-question diagnostic.
-   - Click the test shortcut: **"Simulate Weak (38%)"** and click **Submit Diagnostic**.
-5. **Inspect Diagnostic Evaluation**:
-   - Score: **38%** (<50%).
-   - Classification: **Foundation Required**.
-   - Topic Breakdown reveals: **JavaScript Functions (0%)** and **DOM Manipulation (0%)** are weak.
-   - Review correct pedagogical explanations for missed questions.
-6. **Observe Adaptive Roadmap Mutation (`/roadmap`)**:
-   - The **Adaptive Recommendation Agent** injected **Stage 3: Foundational JavaScript & DOM Remediation** (marked with a glowing *Adaptively Injected Remediation* badge).
-   - Advanced React and Node.js stages remain locked.
-7. **Complete a Foundation Resource (`/resources`)**:
-   - Locate *"JavaScript Functions & Scope Deep-Dive"* (Free MDN guide).
-   - Click **"Mark Completed"**.
-   - The **Progress Tracking Agent** credits 1.5 study hours and boosts JavaScript proficiency.
-8. **Retake Assessment (`/assessments/asm_react_prereq`)**:
-   - Click **"Retake Diagnostic"**.
-   - Click the test shortcut: **"Simulate High (100%)"** and click **Submit Diagnostic**.
-   - Score: **100%** (≥75%).
-   - Status updates to **Ready**!
-9. **Verify Main Course Unlock (`/roadmap` & `/courses/crs_react`)**:
-   - Stage 1, 2, 3, and 4 are certified complete.
-   - **React Developer Path** is officially **Unlocked** and marked **In Progress**!
-10. **Interact with AI Mentor (`/mentor`)**:
-    - Click the prompt pill: *"What should I learn next?"*.
-    - AI Mentor analyzes Aarav's active stage and replies: *"Based on your roadmap for Full Stack Developer, your highest-priority next step is React Framework Mastery (Stage 5)..."*.
-    - Click the action pill: **"Open React Framework Mastery"**.
-11. **Pivot Career Goal to Data Scientist (`/careers`)**:
-    - Click **"Select Career & Adapt Roadmap"** on the **Data Scientist** card.
-    - An explanation modal appears: existing compatible skills (**Python & SQL**) are preserved!
-    - Readiness immediately updates to reflect existing data foundations.
-    - An entirely new 6-stage Data Scientist roadmap is generated (Stages 1 & 2 pre-completed!).
-12. **Inspect Multi-Agent Activity (`/agents` or Top Bar Pill)**:
-    - Open the **AI Agent Activity** drawer.
-    - View live structured telemetry, agent inputs, outputs, summaries, and exact roadmap impacts for all 9 agents!
-13. **Admin Console (`/admin`)**:
-    - Switch user to **Admin User** from the header menu.
-    - View platform metrics, difficult skills list, and test CRUD operations on Careers, Courses, Skills, and Resources.
-14. **Reset Demo Anytime**:
-    - Click the **Reset** icon in the header bar to restore baseline seed data.
+### 1. Administrator Portal (`/admin`)
+- **Login**: Navigate to `/login`, switch to the **Admin Portal** tab, and enter `admin@skillpath.ai` with password `admin123`.
+- **Course Enrollments**: Live dashboard table showing how many students have enrolled in each course, completion counts, average class progress, and student avatars.
+- **Student Directory**: Complete directory of registered students with search, course filtering, target careers, progress bars, certificate counts, and detailed student drawer inspection.
+- **Curriculum Management**: Create, edit, and curate Careers, Courses, Skills, and Learning Resources.
+
+### 2. Student Portal & Learning Path (`/dashboard`, `/courses`, `/roadmap`)
+- **Sign Up / Sign In**: Register with email/password or use **Continue with Google** (via Supabase OAuth).
+- **Personalized Dashboard**: Real-time competency radar, weekly velocity, and target career tracking.
+- **Interactive Course Player**: Study curriculum topics, complete theory modules, watch video lessons, and take topic check quizzes.
+- **Verifiable Certificates**: Direct client-side certificate generation with PNG downloads and landscape print formats.
+- **Adaptive AI Mentor**: Pedagogical guidance and automated recommendations tailored to the student's active roadmap.
 
 ---
 

@@ -3,8 +3,8 @@ import { db } from '@/lib/db';
 import { AgentOrchestrator } from '@/lib/agents/orchestrator';
 
 export async function GET(req: NextRequest) {
-  const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
-  const user = db.getUser(userId) || db.getUser('usr_aarav');
+  const userId = req.cookies.get('skillpath_user_id')?.value;
+  const user = userId ? db.getUser(userId) : null;
   const careers = db.getCareers();
   const allSkills = db.getSkills();
   const skillMap = new Map(allSkills.map((s) => [s.id, s.name]));
@@ -55,7 +55,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+    const userId = req.cookies.get('skillpath_user_id')?.value;
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await req.json();
     const { careerId } = body;
 

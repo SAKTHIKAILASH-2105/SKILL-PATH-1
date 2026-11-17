@@ -8,7 +8,10 @@ export async function POST(
 ) {
   try {
     const { courseId, topicId } = await context.params;
-    const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+    const userId = req.cookies.get('skillpath_user_id')?.value;
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
 
     const course = db.getCourse(courseId);
     if (!course) {

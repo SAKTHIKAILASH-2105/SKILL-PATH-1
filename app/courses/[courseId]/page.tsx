@@ -33,7 +33,7 @@ function CourseDetailContent() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [certModalOpen, setCertModalOpen] = useState(false);
-  const [userName, setUserName] = useState('Aarav Sharma');
+  const [userName, setUserName] = useState('Student');
 
   useEffect(() => {
     fetch('/api/user')

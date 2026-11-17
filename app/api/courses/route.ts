@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
-  const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+  const userId = req.cookies.get('skillpath_user_id')?.value;
   const courses = db.getCourses();
   const allSkills = db.getSkills();
   const skillMap = new Map(allSkills.map((s) => [s.id, s.name]));
-  const userSkills = db.getUserSkills(userId);
+  const userSkills = userId ? db.getUserSkills(userId) : [];
   const userSkillMap = new Map(userSkills.map((us) => [us.skillId, us]));
-  const progress = db.getUserProgress(userId);
-  const submissions = db.getSubmissions(userId);
-  const topicProgress = db.getTopicProgress(userId);
-  const user = db.getUser(userId) || db.getUser('usr_aarav');
+  const progress = userId ? db.getUserProgress(userId) : { completedCourseIds: [] as string[] };
+  const submissions = userId ? db.getSubmissions(userId) : [];
+  const topicProgress = userId ? db.getTopicProgress(userId) : {};
+  const user = userId ? db.getUser(userId) : null;
 
   const enriched = courses.map((crs) => {
     // Check prerequisites

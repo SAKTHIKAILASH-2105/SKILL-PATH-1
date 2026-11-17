@@ -31,10 +31,10 @@ export async function GET(req: NextRequest) {
   // Assessment performance stats
   const avgScore = submissions.length > 0
     ? Math.round(submissions.reduce((acc, s) => acc + s.score, 0) / submissions.length)
-    : 72;
+    : 0;
 
   const passedSubmissions = submissions.filter((s) => s.score >= 75).length;
-  const passRate = submissions.length > 0 ? Math.round((passedSubmissions / submissions.length) * 100) : 65;
+  const passRate = submissions.length > 0 ? Math.round((passedSubmissions / submissions.length) * 100) : 0;
 
   // Difficult skills (skills where users have lowest average verified score)
   const allUserSkills = db.getRaw().userSkills;

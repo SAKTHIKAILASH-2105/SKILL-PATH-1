@@ -4,7 +4,8 @@ import { AgentOrchestrator } from '@/lib/agents/orchestrator';
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = req.cookies.get('skillpath_user_id')?.value || 'usr_aarav';
+    const userId = req.cookies.get('skillpath_user_id')?.value;
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await req.json();
     const { title, description, techStack, githubUrl, liveUrl } = body;
 

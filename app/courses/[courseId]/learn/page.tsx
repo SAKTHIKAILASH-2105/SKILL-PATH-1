@@ -136,7 +136,7 @@ function CourseLearningContent() {
   const [proModalOpen, setProModalOpen] = useState(false);
   const [proModalTitle, setProModalTitle] = useState('');
   const [certModalOpen, setCertModalOpen] = useState(false);
-  const [userName, setUserName] = useState('Aarav Sharma');
+  const [userName, setUserName] = useState('Student');
 
   useEffect(() => {
     fetch('/api/user')

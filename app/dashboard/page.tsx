@@ -1151,7 +1151,7 @@ export default function DashboardPage() {
         onClose={() => setCertModalOpen(false)}
         courseTitle={courses.find((c) => c.id === selectedCourseId)?.title || 'Course'}
         courseId={selectedCourseId}
-        userName={data?.user?.name || 'Aarav Sharma'}
+        userName={data?.user?.name || 'Student'}
         skills={courses.find((c) => c.id === selectedCourseId)?.skillsTaught || []}
       />
     </AppShell>
