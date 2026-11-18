@@ -108,6 +108,7 @@ export default function SignupPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'send',
+          name: name.trim(),
           email: email.trim().toLowerCase(),
           password,
         }),
@@ -194,6 +195,7 @@ export default function SignupPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'send',
+          name: name.trim(),
           email: email.trim().toLowerCase(),
           password,
         }),
