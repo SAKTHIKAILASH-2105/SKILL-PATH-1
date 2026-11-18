@@ -127,9 +127,28 @@ export default function SignupPage() {
         throw new Error(data.message || data.error || 'Failed to send verification code.');
       }
 
-      // Success -> open OTP Modal
+      // Success -> open OTP Modal & dispatch via EmailJS from browser
       if (data.previewCode) {
         setPreviewOtp(data.previewCode);
+        try {
+          const emailjs = (await import('@emailjs/browser')).default;
+          await emailjs.send(
+            'service_4ud8ctx',
+            'template_suc8u3m',
+            {
+              to_email: email.trim().toLowerCase(),
+              to_name: name.trim(),
+              otp_code: data.previewCode,
+              passcode: data.previewCode,
+              message: `Your SkillPath AI verification code is ${data.previewCode}. Valid for 10 minutes.`,
+              app_name: 'SkillPath AI',
+            },
+            'hBstXmj3nqVx7Ufwj'
+          );
+          console.log('EmailJS dispatched successfully to:', email);
+        } catch (ejsErr: any) {
+          console.warn('EmailJS browser dispatch notice:', ejsErr);
+        }
       }
       setResendCooldown(60);
       setOtpDigits(['', '', '', '', '', '']);
@@ -202,7 +221,27 @@ export default function SignupPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to resend code');
-      if (data.previewCode) setPreviewOtp(data.previewCode);
+      if (data.previewCode) {
+        setPreviewOtp(data.previewCode);
+        try {
+          const emailjs = (await import('@emailjs/browser')).default;
+          await emailjs.send(
+            'service_4ud8ctx',
+            'template_suc8u3m',
+            {
+              to_email: email.trim().toLowerCase(),
+              to_name: name.trim(),
+              otp_code: data.previewCode,
+              passcode: data.previewCode,
+              message: `Your SkillPath AI verification code is ${data.previewCode}. Valid for 10 minutes.`,
+              app_name: 'SkillPath AI',
+            },
+            'hBstXmj3nqVx7Ufwj'
+          );
+        } catch (ejsErr) {
+          console.warn('Resend EmailJS notice:', ejsErr);
+        }
+      }
       setResendCooldown(60);
     } catch (err: any) {
       setOtpError(err.message || 'Could not resend verification code');
