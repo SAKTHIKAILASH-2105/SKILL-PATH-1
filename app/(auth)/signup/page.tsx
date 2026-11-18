@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -17,6 +17,12 @@ import {
   EyeOff,
   GraduationCap,
   KeyRound,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  RotateCcw,
+  Sparkles,
+  Check,
 } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 
@@ -35,7 +41,41 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  const handleSignup = async (e: React.FormEvent) => {
+  // Account Already Exists Popup State
+  const [showExistsModal, setShowExistsModal] = useState(false);
+  const [existingEmail, setExistingEmail] = useState('');
+
+  // OTP Verification Modal State
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(60);
+  const [previewOtp, setPreviewOtp] = useState<string | null>(null);
+
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Password criteria computation
+  const hasMinLen = password.length >= 8;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+
+  const strengthScore = [hasMinLen, hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
+  const isPasswordStrong = strengthScore === 5;
+
+  // Countdown timer for OTP Resend
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showOtpModal && resendCooldown > 0) {
+      timer = setTimeout(() => setResendCooldown((prev) => prev - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [showOtpModal, resendCooldown]);
+
+  // Handle Initial Form Submit -> Validate & Request OTP
+  const handleInitiateSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -47,8 +87,8 @@ export default function SignupPage() {
       setError('Please enter a valid email address.');
       return;
     }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+    if (!isPasswordStrong) {
+      setError('Please fulfill all strong password requirements before continuing.');
       return;
     }
     if (password !== confirmPassword) {
@@ -62,6 +102,124 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
+      // Call OTP send API to check if account exists and send email verification code
+      const res = await fetch('/api/auth/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send',
+          email: email.trim().toLowerCase(),
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 409 || data.error === 'ACCOUNT_EXISTS') {
+        // Trigger the "Account Already Exists" Popup!
+        setExistingEmail(email.trim().toLowerCase());
+        setShowExistsModal(true);
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(data.message || data.error || 'Failed to send verification code.');
+      }
+
+      // Success -> open OTP Modal
+      if (data.previewCode) {
+        setPreviewOtp(data.previewCode);
+      }
+      setResendCooldown(60);
+      setOtpDigits(['', '', '', '', '', '']);
+      setOtpError('');
+      setShowOtpModal(true);
+      setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while preparing your account');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Digit Typing in OTP Input Boxes
+  const handleOtpChange = (index: number, value: string) => {
+    // Only accept numeric digit
+    const cleaned = value.replace(/[^0-9]/g, '');
+    if (!cleaned) {
+      const nextDigits = [...otpDigits];
+      nextDigits[index] = '';
+      setOtpDigits(nextDigits);
+      return;
+    }
+
+    // Support pasting multi-digit code
+    if (cleaned.length > 1) {
+      const pasted = cleaned.slice(0, 6).split('');
+      const nextDigits = [...otpDigits];
+      pasted.forEach((char, i) => {
+        if (i < 6) nextDigits[i] = char;
+      });
+      setOtpDigits(nextDigits);
+      const nextFocus = Math.min(pasted.length, 5);
+      otpInputRefs.current[nextFocus]?.focus();
+      return;
+    }
+
+    const nextDigits = [...otpDigits];
+    nextDigits[index] = cleaned[0];
+    setOtpDigits(nextDigits);
+
+    // Auto advance to next box
+    if (index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Handle Backspace Key in OTP Boxes
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // Resend OTP Code
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    setOtpLoading(true);
+    setOtpError('');
+    try {
+      const res = await fetch('/api/auth/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send',
+          email: email.trim().toLowerCase(),
+          password,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to resend code');
+      if (data.previewCode) setPreviewOtp(data.previewCode);
+      setResendCooldown(60);
+    } catch (err: any) {
+      setOtpError(err.message || 'Could not resend verification code');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // Finalize Signup with Verified OTP
+  const handleVerifyAndComplete = async () => {
+    const code = otpDigits.join('');
+    if (code.length < 6) {
+      setOtpError('Please enter all 6 digits of your verification code.');
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpError('');
+    try {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,14 +230,24 @@ export default function SignupPage() {
           targetCareerId,
           accountType,
           adminPasscode,
+          otpCode: code,
         }),
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Account creation failed');
+
+      if (res.status === 409 || data.error === 'ACCOUNT_EXISTS') {
+        setShowOtpModal(false);
+        setExistingEmail(email.trim().toLowerCase());
+        setShowExistsModal(true);
+        return;
       }
 
+      if (!res.ok) {
+        throw new Error(data.error || data.message || 'Account registration failed.');
+      }
+
+      // Success! Redirect to correct portal
       if (accountType === 'admin') {
         router.push('/admin');
       } else {
@@ -87,12 +255,13 @@ export default function SignupPage() {
       }
       router.refresh();
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred during account creation');
+      setOtpError(err.message || 'Verification failed. Please check the code.');
     } finally {
-      setLoading(false);
+      setOtpLoading(false);
     }
   };
 
+  // Google OAuth Flow
   const handleGoogleSignIn = async () => {
     setError('');
     setGoogleLoading(true);
@@ -109,30 +278,23 @@ export default function SignupPage() {
         },
       });
 
-      if (oauthError) {
-        throw oauthError;
-      }
-
+      if (oauthError) throw oauthError;
       if (data?.url) {
         window.location.href = data.url;
         return;
       }
     } catch (err: any) {
-      const msg = err.message || '';
-      if (msg.includes('not enabled') || msg.includes('Unsupported provider') || msg.includes('validation_failed')) {
-        setError(
-          'Google Provider is not enabled in your Supabase project yet. In your Supabase Dashboard, go to Authentication → Providers → Google to enable it, or create your account with email and password below.'
-        );
-      } else {
-        setError(msg || 'Google sign-up failed. Please try again or create your account with email.');
-      }
+      setError(err.message || 'Google sign-up failed. Please try again or use email.');
       setGoogleLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center py-10 sm:px-6 lg:px-8 font-sans">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center py-10 sm:px-6 lg:px-8 font-sans relative overflow-x-hidden">
+      {/* Background ambient lighting */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-gradient-to-b from-blue-600/10 via-purple-600/5 to-transparent blur-3xl pointer-events-none" />
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10">
         <Link href="/" className="inline-flex items-center gap-2.5 mb-5 group">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
             <Compass className="w-6 h-6" />
@@ -141,15 +303,13 @@ export default function SignupPage() {
             SkillPath<span className="text-blue-500"> AI</span>
           </span>
         </Link>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-          Create your account
-        </h2>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Create your account</h2>
         <p className="mt-2 text-xs sm:text-sm text-slate-400">
           Get personal skill assessments, AI study roadmaps, and verifiable certificates.
         </p>
       </div>
 
-      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0 relative z-10">
         <div className="bg-slate-900/95 border border-slate-800 py-7 px-6 sm:px-10 shadow-2xl rounded-3xl backdrop-blur space-y-5">
           {/* Account Type Selector */}
           <div className="p-1 rounded-2xl bg-slate-950 border border-slate-800 grid grid-cols-2 gap-1">
@@ -238,7 +398,7 @@ export default function SignupPage() {
             </>
           )}
 
-          <form onSubmit={handleSignup} className="space-y-4">
+          <form onSubmit={handleInitiateSignup} className="space-y-4">
             {/* Full Name */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
@@ -291,7 +451,6 @@ export default function SignupPage() {
                 </select>
               </div>
             ) : (
-              /* Admin Passcode */
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
@@ -315,7 +474,7 @@ export default function SignupPage() {
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5 text-slate-400" />
-                <span>Password</span>
+                <span>Password (Strong)</span>
               </label>
               <div className="relative">
                 <input
@@ -323,8 +482,14 @@ export default function SignupPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors"
+                  placeholder="Min 8 chars, A-Z, 0-9, special symbol"
+                  className={`w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-950 border text-white text-xs placeholder:text-slate-600 focus:outline-none transition-colors ${
+                    password.length > 0
+                      ? isPasswordStrong
+                        ? 'border-emerald-500/70 focus:border-emerald-400'
+                        : 'border-amber-500/70 focus:border-amber-400'
+                      : 'border-slate-800 focus:border-blue-500'
+                  }`}
                 />
                 <button
                   type="button"
@@ -335,6 +500,84 @@ export default function SignupPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+
+              {/* Password Strength Meter */}
+              {password.length > 0 && (
+                <div className="mt-2 space-y-1.5 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400 font-medium">Strength:</span>
+                    <span
+                      className={`font-bold ${
+                        strengthScore === 5
+                          ? 'text-emerald-400'
+                          : strengthScore >= 3
+                          ? 'text-amber-400'
+                          : 'text-rose-400'
+                      }`}
+                    >
+                      {strengthScore === 5
+                        ? 'Strong Password ✓'
+                        : strengthScore >= 3
+                        ? 'Medium'
+                        : 'Weak (Needs more criteria)'}
+                    </span>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden flex gap-1">
+                    {[1, 2, 3, 4, 5].map((lvl) => (
+                      <div
+                        key={lvl}
+                        className={`h-full flex-1 transition-all duration-300 rounded-full ${
+                          strengthScore >= lvl
+                            ? strengthScore === 5
+                              ? 'bg-emerald-500'
+                              : strengthScore >= 3
+                              ? 'bg-amber-500'
+                              : 'bg-rose-500'
+                            : 'bg-slate-800'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Criteria Checklist */}
+                  <div className="grid grid-cols-2 gap-1 pt-1 text-[10px]">
+                    <div
+                      className={`flex items-center gap-1.5 ${
+                        hasMinLen ? 'text-emerald-400 font-semibold' : 'text-slate-500'
+                      }`}
+                    >
+                      {hasMinLen ? <Check className="w-3 h-3 text-emerald-400" /> : <span className="w-3 text-center">•</span>}
+                      <span>8+ characters</span>
+                    </div>
+                    <div
+                      className={`flex items-center gap-1.5 ${
+                        hasUpper && hasLower ? 'text-emerald-400 font-semibold' : 'text-slate-500'
+                      }`}
+                    >
+                      {hasUpper && hasLower ? <Check className="w-3 h-3 text-emerald-400" /> : <span className="w-3 text-center">•</span>}
+                      <span>Upper & lowercase</span>
+                    </div>
+                    <div
+                      className={`flex items-center gap-1.5 ${
+                        hasNumber ? 'text-emerald-400 font-semibold' : 'text-slate-500'
+                      }`}
+                    >
+                      {hasNumber ? <Check className="w-3 h-3 text-emerald-400" /> : <span className="w-3 text-center">•</span>}
+                      <span>At least 1 number</span>
+                    </div>
+                    <div
+                      className={`flex items-center gap-1.5 ${
+                        hasSpecial ? 'text-emerald-400 font-semibold' : 'text-slate-500'
+                      }`}
+                    >
+                      {hasSpecial ? <Check className="w-3 h-3 text-emerald-400" /> : <span className="w-3 text-center">•</span>}
+                      <span>Special symbol (!@#$)</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Confirm Password */}
@@ -375,14 +618,12 @@ export default function SignupPage() {
               {loading ? (
                 <>
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Creating Account...</span>
+                  <span>Verifying Details...</span>
                 </>
               ) : (
                 <>
                   <UserPlus className="w-4 h-4" />
-                  <span>
-                    {accountType === 'admin' ? 'Create Administrator Account' : 'Create Student Account'}
-                  </span>
+                  <span>Verify Email & Create Account</span>
                 </>
               )}
             </button>
@@ -399,6 +640,175 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* 1. POPUP MODAL: ACCOUNT ALREADY EXISTS                                    */}
+      {/* ========================================================================= */}
+      {showExistsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className="bg-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-center space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto shadow-inner">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold text-white tracking-tight">Account Already Exists</h3>
+              <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
+                An account with the email{' '}
+                <span className="font-semibold text-amber-300 underline underline-offset-2">
+                  {existingEmail}
+                </span>{' '}
+                is already registered on SkillPath Academy.
+              </p>
+            </div>
+
+            <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-400 text-left space-y-1">
+              <p className="flex items-center gap-1.5 text-slate-300 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Your profile & courses are securely saved.</span>
+              </p>
+              <p className="text-[11px] text-slate-400 pl-5">
+                Please sign in with your password or use Google Sign-In to access your portal.
+              </p>
+            </div>
+
+            <div className="space-y-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExistsModal(false);
+                  router.push(`/login?email=${encodeURIComponent(existingEmail)}`);
+                }}
+                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+              >
+                <span>Go to Sign In</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExistsModal(false);
+                  setEmail('');
+                }}
+                className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition-colors"
+              >
+                Use a Different Email
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 2. POPUP MODAL: EMAIL OTP VERIFICATION                                   */}
+      {/* ========================================================================= */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-center space-y-5">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30">
+              <Mail className="w-7 h-7" />
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold text-white tracking-tight">Verify Your Email Address</h3>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
+                We sent a 6-digit verification code to:
+                <br />
+                <span className="font-semibold text-blue-400">{email}</span>
+              </p>
+            </div>
+
+            {/* In-app code helper if email provider rate limit occurred */}
+            {previewOtp && (
+              <div className="p-3 bg-blue-950/60 border border-blue-500/40 rounded-2xl text-left space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-blue-300">
+                  <Sparkles className="w-4 h-4 text-blue-400" />
+                  <span>Instant Verification Code:</span>
+                </div>
+                <div className="text-xl font-mono tracking-widest font-extrabold text-white text-center py-1 bg-slate-950/80 rounded-lg border border-blue-500/30">
+                  {previewOtp}
+                </div>
+                <p className="text-[10px] text-blue-300/80 text-center">
+                  Enter this code below to instantly activate your account.
+                </p>
+              </div>
+            )}
+
+            {/* 6 Digit Input Boxes */}
+            <div>
+              <div className="flex justify-center gap-2 sm:gap-2.5">
+                {otpDigits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => {
+                      otpInputRefs.current[idx] = el;
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={idx === 0 ? 6 : 1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                    className="w-11 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-extrabold font-mono rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all shadow-inner"
+                  />
+                ))}
+              </div>
+
+              {otpError && (
+                <p className="mt-3 text-xs text-rose-400 flex items-center justify-center gap-1.5 font-medium">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>{otpError}</span>
+                </p>
+              )}
+            </div>
+
+            {/* Verify Button */}
+            <div className="space-y-3 pt-1">
+              <button
+                type="button"
+                onClick={handleVerifyAndComplete}
+                disabled={otpLoading || otpDigits.join('').length < 6}
+                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {otpLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Verifying Code...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Verify & Complete Registration</span>
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center justify-between text-xs px-1 text-slate-400">
+                <button
+                  type="button"
+                  onClick={() => setShowOtpModal(false)}
+                  className="hover:text-slate-200 transition-colors"
+                >
+                  ← Edit details
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resendCooldown > 0 || otpLoading}
+                  className="text-blue-400 hover:text-blue-300 font-semibold disabled:text-slate-500 flex items-center gap-1 transition-colors"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
