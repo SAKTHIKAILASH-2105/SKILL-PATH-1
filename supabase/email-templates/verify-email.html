@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Verify your email - SkillPath Academy</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0b0f19;
+      color: #f8fafc;
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      text-decoration: none;
+      margin-bottom: 24px;
+      display: block;
+    }
+    .logo-accent {
+      color: #3b82f6;
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+    p {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .otp-box {
+      background: #1e293b;
+      border: 1px solid #3b82f6;
+      border-radius: 14px;
+      padding: 18px 24px;
+      text-align: center;
+      margin: 24px 0;
+    }
+    .otp-code {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 8px;
+      color: #60a5fa;
+    }
+    .note {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 24px;
+      line-height: 1.5;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 12px;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      SkillPath<span class="logo-accent"> Academy</span>
+    </div>
+    <h2>Verify Your Email Address</h2>
+    <p>Welcome to SkillPath Academy! Enter the 6-digit verification code below in your registration window to activate your student account:</p>
+    
+    <div class="otp-box">
+      <div class="otp-code">{{ .Token }}</div>
+    </div>
+
+    <p style="margin-bottom: 0;">This code is valid for <strong>10 minutes</strong>. Never share this code with anyone.</p>
+    
+    <div class="note">
+      If you did not request this verification email, you can safely ignore it.
+    </div>
+  </div>
+  <div class="footer">
+    &copy; SkillPath Academy &bull; Autonomous Adaptive Learning Platform
+  </div>
+</body>
+</html>
