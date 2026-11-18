@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { getSupabase, getSupabaseAdmin, isSupabaseConfigured } from '@/lib/supabase';
 import { User } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
@@ -31,20 +31,58 @@ export async function POST(req: NextRequest) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = name.trim();
 
-    // Check if user exists in local database
-    const existing = db.getUserByEmail(cleanEmail);
-    if (existing) {
-      return NextResponse.json({ error: 'An account with this email already exists. Please sign in.' }, { status: 409 });
-    }
-
     let supabaseUserId: string | undefined;
 
-    // If Supabase is configured, create the user in Supabase Auth!
-    if (isSupabaseConfigured()) {
+    // 1. Create or sync user in Supabase Auth with guaranteed email_confirm: true
+    const supabaseAdmin = getSupabaseAdmin();
+    if (supabaseAdmin) {
+      try {
+        const { data: userList } = await supabaseAdmin.auth.admin.listUsers();
+        const existingSb = userList?.users.find((u) => u.email?.toLowerCase() === cleanEmail);
+
+        if (existingSb) {
+          // If already in Supabase, update password and mark email confirmed
+          const { data: updated, error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(
+            existingSb.id,
+            {
+              password,
+              email_confirm: true,
+              user_metadata: {
+                name: cleanName,
+                target_career_id: targetCareerId || 'car_fullstack',
+                role: accountType === 'admin' ? 'admin' : 'learner',
+              },
+            }
+          );
+          if (!updateErr && updated.user) {
+            supabaseUserId = updated.user.id;
+          }
+        } else {
+          // Create user directly in Supabase with email_confirm: true
+          const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+            email: cleanEmail,
+            password,
+            email_confirm: true,
+            user_metadata: {
+              name: cleanName,
+              target_career_id: targetCareerId || 'car_fullstack',
+              role: accountType === 'admin' ? 'admin' : 'learner',
+            },
+          });
+          if (!createErr && created.user) {
+            supabaseUserId = created.user.id;
+          } else if (createErr) {
+            console.warn('Supabase admin.createUser notice:', createErr.message);
+          }
+        }
+      } catch (adminErr: any) {
+        console.warn('Supabase admin create/sync error:', adminErr.message);
+      }
+    } else if (isSupabaseConfigured()) {
       try {
         const supabase = getSupabase();
         if (supabase) {
-          const { data, error } = await supabase.auth.signUp({
+          const { data } = await supabase.auth.signUp({
             email: cleanEmail,
             password,
             options: {
@@ -54,15 +92,31 @@ export async function POST(req: NextRequest) {
               },
             },
           });
-          if (error) {
-            console.warn('Supabase Auth signup notice:', error.message);
-          } else if (data.user) {
+          if (data?.user) {
             supabaseUserId = data.user.id;
           }
         }
       } catch (sbErr: any) {
-        console.warn('Supabase Auth error (proceeding with local account):', sbErr.message);
+        console.warn('Supabase signup fallback notice:', sbErr.message);
       }
+    }
+
+    // Check if user already exists in local DB
+    const existing = db.getUserByEmail(cleanEmail);
+    if (existing && existing.password === password) {
+      // User is already registered with this exact password - log them in!
+      const response = NextResponse.json({
+        user: existing,
+        message: 'Account already active! Logging you in.',
+        supabaseConnected: Boolean(supabaseUserId || existing.supabaseId),
+      });
+      response.cookies.set('skillpath_user_id', existing.id, {
+        path: '/',
+        httpOnly: false,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30,
+      });
+      return response;
     }
 
     // Generate random avatar gradient or Unsplash photo
@@ -75,22 +129,22 @@ export async function POST(req: NextRequest) {
     const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
 
     const newUser: User = {
-      id: supabaseUserId || `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      id: supabaseUserId || existing?.id || `usr_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       name: cleanName,
       email: cleanEmail,
       role: accountType === 'admin' ? 'admin' : 'learner',
-      avatar: randomAvatar,
+      avatar: existing?.avatar || randomAvatar,
       education: accountType === 'admin' ? 'Platform Administration' : 'Self-Directed / Professional Development',
-      experience: accountType === 'admin' ? 'Platform Manager & Curriculum Director' : '0-2 years (Building Portfolio)',
+      experience: accountType === 'admin' ? 'Platform Manager & Curriculum Director' : 'Building Skills & Portfolio',
       targetCareerId: targetCareerId || 'car_fullstack',
       weeklyHours: accountType === 'admin' ? 35 : 15,
       preferredStyle: accountType === 'admin' ? 'Curriculum Analytics' : 'Hands-on projects & video lessons',
-      streakDays: 1,
+      streakDays: existing?.streakDays || 1,
       subscriptionTier: accountType === 'admin' ? 'enterprise' : 'free',
       subscriptionExpiresAt: null,
       password,
-      supabaseId: supabaseUserId,
-      createdAt: new Date().toISOString(),
+      supabaseId: supabaseUserId || existing?.supabaseId,
+      createdAt: existing?.createdAt || new Date().toISOString(),
     };
 
     db.createUser(newUser);
@@ -103,7 +157,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       user: newUser,
-      message: 'Account created successfully! Welcome to SkillPath AI.',
+      message: 'Account created successfully! Welcome to SkillPath Academy.',
       supabaseConnected: Boolean(supabaseUserId),
     });
 

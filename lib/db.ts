@@ -165,9 +165,11 @@ export const db = {
   },
   createUser(user: User): User {
     const data = ensureDbFile();
-    const existing = data.users.find((u) => u.email.toLowerCase() === user.email.toLowerCase());
-    if (existing) {
-      throw new Error(`A user with email ${user.email} already exists.`);
+    const existingIdx = data.users.findIndex((u) => u.email.toLowerCase() === user.email.toLowerCase() || u.id === user.id);
+    if (existingIdx !== -1) {
+      data.users[existingIdx] = { ...data.users[existingIdx], ...user };
+      saveDb(data);
+      return data.users[existingIdx];
     }
     data.users.push(user);
     // Initialize user progress entry if not already present
