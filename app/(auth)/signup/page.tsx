@@ -719,18 +719,31 @@ export default function SignupPage() {
               </p>
             </div>
 
-            {/* In-app code helper if email provider rate limit occurred */}
+            {/* In-app code helper & spam notice */}
             {previewOtp && (
-              <div className="p-3 bg-blue-950/60 border border-blue-500/40 rounded-2xl text-left space-y-1">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-blue-300">
-                  <Sparkles className="w-4 h-4 text-blue-400" />
-                  <span>Instant Verification Code:</span>
+              <div className="p-3.5 bg-blue-950/60 border border-blue-500/40 rounded-2xl text-left space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-blue-300">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-blue-400" />
+                    <span>Verification Code:</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const digits = previewOtp.split('').slice(0, 6);
+                      setOtpDigits(digits);
+                    }}
+                    className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm flex items-center gap-1"
+                  >
+                    <span>Auto-fill Code</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
                 </div>
-                <div className="text-xl font-mono tracking-widest font-extrabold text-white text-center py-1 bg-slate-950/80 rounded-lg border border-blue-500/30">
+                <div className="text-2xl font-mono tracking-widest font-black text-white text-center py-2 bg-slate-950/90 rounded-xl border border-blue-500/40 shadow-inner">
                   {previewOtp}
                 </div>
-                <p className="text-[10px] text-blue-300/80 text-center">
-                  Enter this code below to instantly activate your account.
+                <p className="text-[11px] text-blue-200/90 text-center leading-relaxed">
+                  Sent to your inbox. <span className="font-semibold text-amber-300">Check your Spam/Junk folder</span> if you don&apos;t see it within 30 seconds.
                 </p>
               </div>
             )}
